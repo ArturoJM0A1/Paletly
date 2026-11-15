@@ -3,499 +3,842 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#10172b" />
-  <title>Encuesta rápida | Web Components + Lit</title>
+  <meta name="theme-color" content="#eaf5ff" />
+  <title>Paletly · Web Components + Lit</title>
 
   <!--
     =========================================================
-    ESTILOS GENERALES DE LA PÁGINA
+    GOOGLE MAPS JAVASCRIPT API (biblioteca asíncrona)
     =========================================================
-    Solo maquetan el fondo, el encabezado y el panel externo.
-    Los estilos del componente van encapsulados en su Shadow DOM.
+    Clave de API facilitada para las pruebas. Protegela: en Google Cloud
+    restringela por HTTP referrer y no la publiques en repositorios publicos.
+    Con "loading=async" la API se carga en segundo plano y se consume
+    mediante google.maps.importLibrary() (bibliotecas "maps" y "marker").
+  -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZa9NjPPh3NGFnLsZis0j14pxYlPMGw40&v=weekly&loading=async" async defer></script>
+
+  <!--
+    =========================================================
+    ESTILOS GENERALES DE LA PÁGINA (solo maquetan el fondo)
+    =========================================================
+    Diseño Glassmorphism claro: tonos azul claro y azul cielo,
+    fondos blancos translúcidos y desenfoque de fondo.
+    Los estilos de cada componente viven encapsulados en su Shadow DOM.
   -->
   <style>
     :root {
-      color-scheme: dark;
+      color-scheme: light;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
         "Segoe UI", sans-serif;
-      background: #10172b;
-      color: #f7f8ff;
-      font-synthesis: none;
+      color: #0f2d4a;
+      background:
+        radial-gradient(ellipse at 12% 8%, rgba(147, 197, 253, 0.65), transparent 42%),
+        radial-gradient(ellipse at 88% 85%, rgba(186, 230, 253, 0.7), transparent 45%),
+        linear-gradient(160deg, #f4faff 0%, #e9f4ff 55%, #f8fcff 100%);
+      background-attachment: fixed;
       text-rendering: optimizeLegibility;
     }
 
     * { box-sizing: border-box; }
 
-    body {
-      min-width: 320px;
-      min-height: 100vh;
-      margin: 0;
-      overflow-x: hidden;
-      background:
-        radial-gradient(ellipse at 12% 12%, rgba(71, 105, 255, 0.30), transparent 38%),
-        radial-gradient(ellipse at 88% 78%, rgba(153, 76, 255, 0.24), transparent 34%),
-        linear-gradient(135deg, #10172b 0%, #17213d 52%, #11182d 100%);
-    }
-
-    /* Luces decorativas fijas del fondo. */
-    body::before,
-    body::after {
-      position: fixed;
-      z-index: 0;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      content: "";
-      filter: blur(90px);
-      pointer-events: none;
-    }
-    body::before {
-      top: 8%;
-      left: -120px;
-      background: rgba(72, 118, 255, 0.22);
-    }
-    body::after {
-      right: -120px;
-      bottom: 4%;
-      background: rgba(174, 91, 255, 0.20);
-    }
+    body { min-width: 320px; min-height: 100vh; margin: 0; }
 
     .pagina {
-      position: relative;
-      z-index: 1;
       display: grid;
-      min-height: 100vh;
-      align-content: center;
+      gap: 26px;
       justify-items: center;
-      gap: 28px;
-      padding: 56px 20px;
+      padding: 48px 18px 40px;
     }
 
-    .encabezado {
-      width: min(100%, 760px);
-      text-align: center;
-    }
+    .encabezado { max-width: 760px; text-align: center; }
 
     .encabezado__sobrelinea {
-      margin: 0 0 12px;
-      color: #aebdff;
-      font-size: 0.76rem;
+      margin: 0 0 10px;
+      color: #2b6cb0;
+      font-size: 0.74rem;
       font-weight: 750;
-      letter-spacing: 0.20em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
     }
 
     .encabezado h1 {
       margin: 0;
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 760;
-      letter-spacing: -0.055em;
-      line-height: 1.08;
+      font-size: clamp(2.2rem, 6vw, 3.4rem);
+      font-weight: 780;
+      letter-spacing: -0.05em;
+      line-height: 1.05;
     }
 
     .encabezado__descripcion {
-      max-width: 590px;
-      margin: 16px auto 0;
-      color: #c1c9df;
+      max-width: 620px;
+      margin: 14px auto 0;
+      color: #40617f;
       font-size: 1rem;
       line-height: 1.7;
     }
 
-    /* Panel externo que recibe el evento "encuesta-completada". */
-    .panel-evento {
-      width: min(100%, 560px);
-      padding: 16px 20px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.07);
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
+    .pie { color: #5b7fa6; font-size: 0.8rem; text-align: center; }
 
-    .panel-evento__titulo {
-      margin: 0 0 6px;
-      color: #aebdff;
-      font-size: 0.72rem;
-      font-weight: 750;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .panel-evento p:last-child {
-      margin: 0;
-      color: #e1e6f8;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
-    .pie {
-      color: #909ab7;
-      font-size: 0.78rem;
-      text-align: center;
-    }
-
-    @media (max-width: 520px) {
-      .pagina { gap: 22px; padding: 40px 16px; }
-      .encabezado__descripcion { font-size: 0.92rem; }
+    @media (max-width: 560px) {
+      .pagina { gap: 20px; padding: 32px 14px; }
+      .encabezado__descripcion { font-size: 0.94rem; }
     }
   </style>
-
-  <!--
-    Lit se importa como módulo ESM desde CDN.
-    Babel Standalone transpila los decoradores (versión estándar 2023-05)
-    para que todo funcione desde este único index.html sin build local.
-  -->
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
-  <script>
-    // Registramos el preset con el plugin de decoradores estándar (2023-05),
-    // que es el que admite Lit 3 junto con la palabra clave "accessor".
-    Babel.registerPreset("lit-decoradores", {
-      plugins: [
-        [Babel.availablePlugins["proposal-decorators"], { version: "2023-05" }]
-      ]
-    });
-  </script>
-
-  <script type="text/babel" data-type="module" data-presets="lit-decoradores">
-    // =========================================================
-    // IMPORTACIONES DESDE LIT 3 (CDN, como módulo)
-    // =========================================================
-    import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-    import { state } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-
-    /**
-     * <encuesta-rapida>
-     * -----------------------------------------------------------------
-     * Componente con un único botón que lanza tres preguntas
-     * (nombre completo, comida favorita y mascota) usando prompt().
-     *
-     * Cada respuesta queda guardada como estado reactivo (@state),
-     * así al cambiar se vuelve a renderizar la vista.
-     *
-     * Al terminar las tres preguntas se emite un CustomEvent
-     * "encuesta-completada" (composed: true) que atraviesa el
-     * Shadow DOM y puede escucharse desde document.
-     */
-    class EncuestaRapida extends LitElement {
-
-      // -----------------------------------------------------
-      // ESTADO REACTIVO INTERNO (dispara re-render al cambiar)
-      // -----------------------------------------------------
-      @state() accessor nombreCompleto = "";
-      @state() accessor comidaFavorita = "";
-      @state() accessor mascota = "";
-      @state() accessor completada = false;
-      @state() accessor mensaje = "Pulsa el botón para responder tres preguntas.";
-
-      // -----------------------------------------------------
-      // ESTILOS ENCAPSULADOS (solo afectan al Shadow DOM)
-      // -----------------------------------------------------
-      static styles = css`
-        :host {
-          display: block;
-          width: min(100%, 560px);
-          color: #f7f8ff;
-        }
-
-        * { box-sizing: border-box; }
-
-        .tarjeta {
-          position: relative;
-          overflow: hidden;
-          padding: clamp(24px, 5vw, 38px);
-          border: 1px solid rgba(255, 255, 255, 0.23);
-          border-radius: 28px;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.17),
-            rgba(255, 255, 255, 0.07)
-          );
-          box-shadow:
-            0 24px 70px rgba(0, 0, 0, 0.30),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-        }
-
-        .marca {
-          display: inline-flex;
-          align-items: center;
-          min-height: 28px;
-          padding: 7px 11px;
-          border: 1px solid rgba(173, 190, 255, 0.24);
-          border-radius: 999px;
-          background: rgba(111, 139, 255, 0.13);
-          color: #cbd5ff;
-          font-size: 0.68rem;
-          font-weight: 760;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-        }
-
-        h2 {
-          margin: 22px 0 0;
-          font-size: clamp(1.7rem, 5vw, 2.3rem);
-          font-weight: 760;
-          letter-spacing: -0.05em;
-          line-height: 1.15;
-        }
-
-        .instruccion {
-          margin: 12px 0 0;
-          color: #c8d0e5;
-          font-size: 0.95rem;
-          line-height: 1.6;
-        }
-
-        /* Mensaje de estado anunciado por lectores de pantalla */
-        .mensaje {
-          min-height: 22px;
-          margin: 18px 0 0;
-          color: #aebdff;
-          font-size: 0.88rem;
-          line-height: 1.5;
-        }
-
-        /* Lista de respuestas */
-        .resultados {
-          display: grid;
-          gap: 12px;
-          margin: 22px 0 0;
-        }
-
-        .respuesta {
-          display: grid;
-          gap: 4px;
-          padding: 14px 16px;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 14px;
-          background: rgba(255, 255, 255, 0.05);
-        }
-
-        .respuesta__etiqueta {
-          color: #aab5d0;
-          font-size: 0.72rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-
-        .respuesta__valor {
-          color: #ffffff;
-          font-size: 1rem;
-          font-weight: 650;
-          word-break: break-word;
-        }
-
-        /* Botón principal (único botón de la tarjeta) */
-        button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          min-height: 48px;
-          margin-top: 26px;
-          padding: 0 20px;
-          border: 0;
-          border-radius: 13px;
-          background: linear-gradient(110deg, #a9baff, #c5a7ff);
-          box-shadow: 0 8px 24px rgba(116, 125, 255, 0.25);
-          color: #17203b;
-          cursor: pointer;
-          font: inherit;
-          font-size: 0.92rem;
-          font-weight: 760;
-          transition: transform 160ms ease, filter 160ms ease;
-        }
-
-        button:hover {
-          filter: brightness(1.08);
-          transform: translateY(-2px);
-        }
-
-        button:active { transform: translateY(0); }
-
-        button:focus-visible {
-          outline: 3px solid #ffffff;
-          outline-offset: 3px;
-        }
-      `;
-
-      // -----------------------------------------------------
-      // CICLO DE VIDA
-      // -----------------------------------------------------
-
-      // Se ejecuta cuando el componente se conecta al DOM.
-      connectedCallback() {
-        super.connectedCallback();
-        console.info("[encuesta-rapida] connectedCallback(): componente conectado al DOM.");
-      }
-
-      // Se ejecuta tras cada actualización del componente.
-      updated(propiedadesAnteriores) {
-        const modificadas = [...propiedadesAnteriores.keys()];
-        if (modificadas.length > 0) {
-          console.info("[encuesta-rapida] updated():", modificadas);
-        }
-      }
-
-      // -----------------------------------------------------
-      // LÓGICA DE LA ENCUESTA
-      // -----------------------------------------------------
-
-      /**
-       * Lanza las tres preguntas una detrás de otra con prompt().
-       * Si el usuario cancela cualquiera, se aborta sin registrar nada.
-       * Al terminar, guarda las respuestas como estado y emite un
-       * CustomEvent que atraviesa el Shadow DOM.
-       */
-      lanzarEncuesta() {
-        // Pregunta 1/3: nombre completo.
-        const nombre = prompt("1/3 · ¿Cuál es tu nombre completo?");
-        if (nombre === null) { this.mensaje = "Encuesta cancelada en la primera pregunta."; return; }
-        if (!nombre.trim()) { this.mensaje = "El nombre completo no puede estar vacío."; return; }
-
-        // Pregunta 2/3: comida favorita.
-        const comida = prompt("2/3 · ¿Cuál es tu comida favorita?");
-        if (comida === null) { this.mensaje = "Encuesta cancelada en la segunda pregunta."; return; }
-        if (!comida.trim()) { this.mensaje = "La comida favorita no puede estar vacía."; return; }
-
-        // Pregunta 3/3: mascota.
-        const mascota = prompt("3/3 · ¿Cómo se llama tu mascota?");
-        if (mascota === null) { this.mensaje = "Encuesta cancelada en la tercera pregunta."; return; }
-        if (!mascota.trim()) { this.mensaje = "El nombre de la mascota no puede estar vacío."; return; }
-
-        // Guardamos las respuestas como estado reactivo (dispara re-render).
-        this.nombreCompleto = nombre.trim();
-        this.comidaFavorita = comida.trim();
-        this.mascota = mascota.trim();
-        this.completada = true;
-        this.mensaje = `¡Gracias, ${this.nombreCompleto}! Estas son tus respuestas:`;
-
-        // Emitimos un evento personalizado que atraviesa el Shadow DOM.
-        // composed: true → sale del Shadow DOM.
-        // bubbles: true  → asciende hasta document.
-        this.dispatchEvent(
-          new CustomEvent("encuesta-completada", {
-            detail: {
-              nombreCompleto: this.nombreCompleto,
-              comidaFavorita: this.comidaFavorita,
-              mascota: this.mascota
-            },
-            bubbles: true,
-            composed: true
-          })
-        );
-      }
-
-      /**
-       * Reinicia la encuesta para poder contestarla de nuevo.
-       * (Se dispara desde el botón que aparece al terminar).
-       */
-      reiniciar() {
-        this.nombreCompleto = "Arturo";
-        this.comidaFavorita = "";
-        this.mascota = "";
-        this.completada = false;
-        this.mensaje = "Pulsa el botón para responder tres preguntas.";
-      }
-
-      // -----------------------------------------------------
-      // RENDERIZADO DECLARATIVO CON LA PLANTILLA html
-      // -----------------------------------------------------
-      render() {
-        return html`
-          <article class="tarjeta">
-            <span class="marca">ENCUESTA · LIT ELEMENT</span>
-
-            <h2>Cuéntame un poco de ti</h2>
-            <p class="instruccion">
-              Al pulsar el botón se lanzarán tres preguntas consecutivas:
-              tu nombre completo, tu comida favorita y el nombre de tu mascota.
-            </p>
-
-            <!-- Mensaje de estado (aria-live lo anuncia al cambiar). -->
-            <p class="mensaje" aria-live="polite">${this.mensaje}</p>
-
-            <!--
-              Si la encuesta ya se completó, mostramos las respuestas y
-              un botón para repetirla. Si no, solo el botón que la inicia.
-            -->
-            ${this.completada
-              ? html`
-                  <div class="resultados">
-                    <div class="respuesta">
-                      <span class="respuesta__etiqueta">Nombre completo</span>
-                      <span class="respuesta__valor">${this.nombreCompleto}</span>
-                    </div>
-                    <div class="respuesta">
-                      <span class="respuesta__etiqueta">Comida favorita</span>
-                      <span class="respuesta__valor">${this.comidaFavorita}</span>
-                    </div>
-                    <div class="respuesta">
-                      <span class="respuesta__etiqueta">Mascota</span>
-                      <span class="respuesta__valor">${this.mascota}</span>
-                    </div>
-                  </div>
-
-                  <button type="button" @click=${this.reiniciar}>
-                    Volver a contestar
-                  </button>
-                `
-              : html`
-                  <!-- Botón único que dispara las tres preguntas. -->
-                  <button type="button" @click=${this.lanzarEncuesta}>
-                    Responder 3 preguntas
-                  </button>
-                `}
-          </article>
-        `;
-      }
-    }
-
-    // Registramos el Web Component para poder usar <encuesta-rapida> en HTML.
-    customElements.define("encuesta-rapida", EncuestaRapida);
-
-    // -----------------------------------------------------
-    // ESCUCHA DEL EVENTO PERSONALIZADO DESDE EL DOCUMENTO
-    // El evento cruza el Shadow DOM gracias a composed: true.
-    // -----------------------------------------------------
-    document.addEventListener("encuesta-completada", (evento) => {
-      const { nombreCompleto, comidaFavorita, mascota } = evento.detail;
-      const salida = document.querySelector("#resultado-evento");
-      salida.textContent =
-        `Encuesta recibida de ${nombreCompleto} · ` +
-        `comida favorita: ${comidaFavorita} · ` +
-        `mascota: ${mascota}.`;
-    });
-  </script>
 </head>
 
 <body>
   <main class="pagina">
     <header class="encabezado">
       <p class="encabezado__sobrelinea">Web Components · LitElement</p>
-      <h1>Una encuesta en un solo botón.</h1>
+      <h1>Paletly</h1>
       <p class="encabezado__descripcion">
-    Encuesta breve
+        Cuatro componentes independientes: generador de paletas, reloj local,
+        geolocalización y mapa. Se comunican mediante propiedades y eventos
+        personalizados que atraviesan el Shadow DOM.
       </p>
     </header>
 
-    <!-- Uso del Web Component: contiene el botón y la lógica. -->
-    <encuesta-rapida></encuesta-rapida>
+    <!-- Componente principal: administra el estado compartido. -->
+    <app-dashboard></app-dashboard>
 
-    <!-- Panel externo que recibe el CustomEvent desde document. -->
-    <section class="panel-evento" aria-live="polite">
-      <p class="panel-evento__titulo">Comunicación con el documento</p>
-      <p id="resultado-evento">
-        Todavía no hay encuestas completadas. Pulsa «Responder 3 preguntas».
-      </p>
-    </section>
-
-    <footer class="pie">
-      Hecho con cafeína · Arturo Juárez Monroy
-    </footer>
+    <footer class="pie">Hecho con cafeína · Arturo Juárez Monroy</footer>
   </main>
+
+  <!--
+    =========================================================
+    CÓDIGO DE LA APLICACIÓN (módulo ESM, sin build)
+    =========================================================
+    Conceptos base del proyecto:
+    · HERENCIA        → class X extends LitElement
+    · CONSTRUCTOR     → constructor() con super(); inicializa el estado
+    · INSTANCIAS      → cada etiqueta <...> es un objeto creado por el navegador
+    · REGISTRO        → customElements.define("etiqueta", Clase)
+    · ENCAPSULAMIENTO → Shadow DOM: HTML/CSS internos aislados por Lit
+    · REACTIVIDAD     → static properties: al cambiar una propiedad, Lit
+                        vuelve a ejecutar render() y actualiza solo lo necesario
+  -->
+  <script type="module">
+    import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+
+    // =========================================================
+    // 1) <palette-generator>
+    //    Responsabilidad: generar EXACTAMENTE cuatro colores hex
+    //    aleatorios y avisar al exterior cuando cambian.
+    // =========================================================
+    class GeneradorPaleta extends LitElement {
+      // Propiedad reactiva: Lit observa sus cambios y re-renderiza la vista.
+      static properties = {
+        paleta: { type: Array } // Array: lista de códigos hexadecimales
+      };
+
+      // Estilos encapsulados: solo aplican dentro de este Shadow DOM.
+      static styles = css`
+        :host { display: block; height: 100%; }
+
+        /* Tarjeta de cristal (Glassmorphism) */
+        .tarjeta {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          padding: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.85);
+          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.55);
+          box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+
+        .marca {
+          color: #2b6cb0;
+          font-size: 0.7rem;
+          font-weight: 760;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+
+        h2 { margin: 8px 0 16px; color: #0f2d4a; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+        /* Rejilla de las cuatro muestras de color */
+        .muestreo { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+        .muestra {
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          height: 88px;
+          border-radius: 16px;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 8px 18px rgba(59, 110, 166, 0.14);
+        }
+
+        .muestra__hex {
+          margin-bottom: 8px;
+          padding: 4px 9px;
+          border-radius: 9px;
+          background: rgba(255, 255, 255, 0.8);
+          color: #0f2d4a;
+          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+          font-size: 0.76rem;
+          font-weight: 700;
+        }
+
+        button {
+          margin-top: auto;
+          padding: 14px 18px;
+          border: 0;
+          border-radius: 14px;
+          background: linear-gradient(110deg, #60a5fa, #7dd3fc);
+          box-shadow: 0 10px 22px rgba(59, 130, 246, 0.28);
+          color: #ffffff;
+          cursor: pointer;
+          font: inherit;
+          font-size: 0.92rem;
+          font-weight: 750;
+          transition: transform 160ms ease, filter 160ms ease;
+        }
+
+        button:hover { filter: brightness(1.06); transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        button:focus-visible { outline: 3px solid #0f2d4a; outline-offset: 3px; }
+      `;
+
+      // CONSTRUCTOR: se ejecuta al crear cada instancia del componente.
+      constructor() {
+        super(); // obligatorio: llama al constructor de LitElement (herencia)
+        this.paleta = []; // estado inicial reactivo (todavía sin colores)
+      }
+
+      // connectedCallback: el componente ya está conectado al DOM.
+      connectedCallback() {
+        super.connectedCallback();
+        // Paleta automática inicial: solo la primera vez que se monta.
+        if (this.paleta.length === 0) this.generarPaleta();
+      }
+
+      // Función flecha (campo de clase): conserva el "this" de la instancia.
+      // Math.random() → color hexadecimal aleatorio de 6 cifras.
+      colorAleatorio = () =>
+        "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0").toUpperCase();
+
+      /**
+       * Genera los cuatro colores y notifica al resto de la aplicación.
+       * Spread Operator: [...Array(4)] crea una NUEVA referencia de array,
+       * imprescindible para que la propiedad reactiva detecte el cambio.
+       */
+      generarPaleta = () => {
+        this.paleta = [...Array(4)].map(() => this.colorAleatorio());
+
+        // EVENTO PERSONALIZADO que atraviesa el Shadow DOM:
+        //   bubbles: true   → asciende por el árbol hasta <app-dashboard>
+        //   composed: true  → cruza la frontera del Shadow DOM
+        this.dispatchEvent(
+          new CustomEvent("paleta-cambio", {
+            detail: { colores: [...this.paleta] }, // los cuatro colores en detail
+            bubbles: true,
+            composed: true
+          })
+        );
+      };
+
+      render() {
+        return html`
+          <article class="tarjeta">
+            <p class="marca">Paleta · 4 colores</p>
+            <h2>Generador aleatorio</h2>
+
+            <!-- Interpolación de plantilla + map() para pintar cada tarjeta -->
+            <div class="muestreo">
+              ${this.paleta.map(
+                (color) => html`
+                  <div class="muestra" style="background-color: ${color}">
+                    <span class="muestra__hex">${color}</span>
+                  </div>
+                `
+              )}
+            </div>
+
+            <!-- Event Binding @click: texto exacto requerido por el enunciado -->
+            <button type="button" @click=${this.generarPaleta}>Generar nueva paleta</button>
+          </article>
+        `;
+      }
+    }
+
+    // REGISTRO del componente: a partir de aquí existe la etiqueta <palette-generator>.
+    customElements.define("palette-generator", GeneradorPaleta);
+
+    // =========================================================
+    // 2) <user-clock>
+    //    Responsabilidad: hora local de 24 horas + zona horaria.
+    // =========================================================
+    class RelojUsuario extends LitElement {
+      static properties = {
+        hora: { type: String },         // String: "14:05:09"
+        zonaHoraria: { type: String }   // String: "Europe/Madrid"
+      };
+
+      static styles = css`
+        :host { display: block; height: 100%; }
+
+        .tarjeta {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          height: 100%;
+          padding: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.85);
+          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.55);
+          box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+
+        .marca {
+          color: #2b6cb0;
+          font-size: 0.7rem;
+          font-weight: 760;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+
+        h2 { margin: 8px 0 4px; color: #0f2d4a; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+        /* cifras tabulares para que los dígitos no "bailen" */
+        .hora {
+          margin: 6px 0 0;
+          color: #0f2d4a;
+          font-size: clamp(2.1rem, 7vw, 3rem);
+          font-weight: 780;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: -0.03em;
+        }
+
+        .zona {
+          display: inline-flex;
+          align-self: flex-start;
+          margin-top: 14px;
+          padding: 7px 13px;
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          border-radius: 999px;
+          background: rgba(147, 197, 253, 0.3);
+          color: #1d5b96;
+          font-size: 0.8rem;
+          font-weight: 650;
+        }
+      `;
+
+      constructor() {
+        super();
+        this.hora = "--:--:--";
+        // API internacional: zona horaria configurada en el navegador.
+        this.zonaHoraria = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      }
+
+      // connectedCallback: se ejecuta al insertar el componente en el DOM.
+      connectedCallback() {
+        super.connectedCallback();
+        this.actualizarHora(); // primera lectura inmediata
+
+        // setInterval(): UN solo temporizador por instancia, cada segundo.
+        // Al cambiar "hora" (propiedad reactiva) Lit vuelve a renderizar.
+        this.temporizador = setInterval(() => this.actualizarHora(), 1000);
+
+        // Comunica la zona horaria al panel principal (evento compuesto).
+        this.dispatchEvent(
+          new CustomEvent("zona-horaria", {
+            detail: { zona: this.zonaHoraria },
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+
+      // disconnectedCallback: se ejecuta al quitar el componente del DOM.
+      // Limpiamos el intervalo para evitar temporizadores huérfanos.
+      disconnectedCallback() {
+        clearInterval(this.temporizador);
+        super.disconnectedCallback();
+      }
+
+      actualizarHora() {
+        const ahora = new Date(); // Date → hora local del usuario
+        // hourCycle "h23": formato de 24 horas (evita "24:00" a medianoche).
+        this.hora = ahora.toLocaleTimeString("es-ES", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23"
+        });
+      }
+
+      render() {
+        return html`
+          <article class="tarjeta">
+            <p class="marca">Reloj · hora local</p>
+            <h2>Tu hora ahora</h2>
+            <p class="hora">${this.hora}</p>
+            <!-- Property Binding string + zona horaria detectada -->
+            <span class="zona">${this.zonaHoraria}</span>
+          </article>
+        `;
+      }
+    }
+
+    customElements.define("user-clock", RelojUsuario);
+
+    // id de mapa demo oficial para usar AdvancedMarkerElement.
+    const DEMO_MAP_ID = "DEMO_MAP_ID";
+
+    // =========================================================
+    // 3) <user-location-map>
+    //    Responsabilidad: pintar coordenadas en Google Maps con un
+    //    marcador avanzado y un círculo de 500 m coloreado con la paleta.
+    // =========================================================
+    class UbicacionMapa extends LitElement {
+      // Tipos: Number (coordenadas) y Array (paleta activa).
+      static properties = {
+        latitud: { type: Number },
+        longitud: { type: Number },
+        paleta: { type: Array },
+        aviso: { type: String } // String: estado de permiso recibido del padre
+      };
+
+      static styles = css`
+        :host { display: block; position: relative; }
+
+        .tarjeta {
+          padding: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.85);
+          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.55);
+          box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+
+        .marca {
+          color: #2b6cb0;
+          font-size: 0.7rem;
+          font-weight: 760;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+
+        h2 { margin: 8px 0 16px; color: #0f2d4a; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+        .mapa {
+          position: relative;
+          height: clamp(300px, 45vh, 430px);
+          border-radius: 18px;
+          overflow: hidden;
+          background: linear-gradient(180deg, #dbf1ff, #f0faff);
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+        }
+
+        /* Aviso de carga / error / permiso denegado (superpuesto al mapa) */
+        .aviso {
+          position: absolute;
+          inset: 0;
+          display: grid;
+          place-content: center;
+          margin: 0;
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.74);
+          color: #1d5b96;
+          font-size: 0.92rem;
+          line-height: 1.6;
+          text-align: center;
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* El atributo [hidden] lo pone el boolean binding ?oculto;
+           el estilo de autor gana al de usuario, así que lo reforzamos. */
+        .aviso[hidden] { display: none; }
+
+        .coordenadas {
+          margin: 14px 0 0;
+          color: #40617f;
+          font-size: 0.86rem;
+          line-height: 1.6;
+        }
+
+        .coordenadas strong { color: #0f2d4a; font-variant-numeric: tabular-nums; }
+      `;
+
+      constructor() {
+        super();
+        this.latitud = null;   // null = aún no hay permiso/coordenadas
+        this.longitud = null;
+        this.paleta = [];
+        this.aviso = "Solicitando permiso de ubicación…";
+        this.mensaje = ""; // mensajes propios del mapa (carga o error de la API)
+        // Campos NO reactivos: solo guardan referencias para no recrear nada.
+        this.mapa = null;
+        this.marcador = null;
+        this.circulo = null;
+        this.pinn = null;
+        this.apiLista = false;
+        this.errorApi = false;
+      }
+
+      /**
+       * firstUpdated(): se ejecuta UNA sola vez, después del primer render,
+       * momento en el que el contenedor interno ya existe en el Shadow DOM.
+       * Aquí inicializamos Google Maps (una única vez para toda la vida útil).
+       */
+      async firstUpdated() {
+        // Consulta de nodos dentro del Shadow Root (renderRoot) para ubicar
+        // el contenedor que Google Maps usará como "lienzo".
+        this.contenedorMapa = this.renderRoot.querySelector("#mapa");
+
+        try {
+          await this.esperarApiGoogle(); // Promesa: espera al script asíncrono
+
+          // importLibrary(): carga perezosamente las bibliotecas necesarias.
+          const { Map: MapaGoogle, Circle: CirculoGoogle } = await google.maps.importLibrary("maps");
+          const { AdvancedMarkerElement: MarcadorAvanzado } = await google.maps.importLibrary("marker");
+
+          this.MapaGoogle = MapaGoogle;
+          this.CirculoGoogle = CirculoGoogle;
+          this.MarcadorAvanzado = MarcadorAvanzado;
+          this.apiLista = true;
+          this.crearMapa(); // pinta si ya llegaron las coordenadas
+        } catch (error) {
+          this.errorApi = true;
+          this.mensaje = `No se pudo cargar Google Maps: ${error.message}`;
+        }
+      }
+
+      /**
+       * updated(): se ejecuta DESPUÉS de cada render del componente.
+       * Aquí reaccionamos a los cambios de propiedades sin reconstruir el mapa.
+       */
+      updated(propiedadesAnteriores) {
+        // Aún no hay mapa: intentamos crearlo (si hay API y coordenadas).
+        if (!this.mapa) {
+          this.crearMapa();
+          if (!this.mapa && !this.errorApi && this.latitud !== null) {
+            this.mensaje = "Preparando el mapa…";
+          }
+        }
+
+        if (!this.mapa) return;
+
+        // Coordenadas nuevas → reubicamos marcador y círculo (sin recrear).
+        if (propiedadesAnteriores.has("latitud") || propiedadesAnteriores.has("longitud")) {
+          const posicion = { lat: this.latitud, lng: this.longitud };
+          this.mapa.setCenter(posicion);
+          this.marcador.position = posicion;
+          this.circulo.setCenter(posicion); // centro idéntico al del marcador
+        }
+
+        // Paleta nueva → solo cambian los colores del círculo y del marcador.
+        if (propiedadesAnteriores.has("paleta")) this.actualizarColores();
+      }
+
+      // disconnectedCallback: liberamos referencias cuando el componente se retira.
+      disconnectedCallback() {
+        if (this.marcador) this.marcador.map = null; // desvincula el marcador
+        this.mapa = null;
+        super.disconnectedCallback();
+      }
+
+      // Promesa que resuelve cuando el script asíncrono expone importLibrary().
+      esperarApiGoogle() {
+        return new Promise((resolver, rechazar) => {
+          let intentos = 0;
+          const comprobar = () => {
+            if (window.google?.maps?.importLibrary) return resolver(); // optional chaining
+            if (intentos++ >= 40) return rechazar(new Error("el script no cargó (revisa la API key o la conexión)"));
+            setTimeout(comprobar, 250); // reintento cada 250 ms (máx. 10 s)
+          };
+          comprobar();
+        });
+      }
+
+      // Crea mapa + marcador + círculo UNA sola vez (guardia anti-recreación).
+      crearMapa() {
+        const listo = this.apiLista && this.latitud !== null && this.longitud !== null;
+        if (this.mapa || !listo) return;
+
+        const posicion = { lat: this.latitud, lng: this.longitud };
+
+        this.mapa = new this.MapaGoogle(this.contenedorMapa, {
+          center: posicion,
+          zoom: 15,               // nivel apropiado para ver ~500 m alrededor
+          mapId: DEMO_MAP_ID,     // obligatorio para AdvancedMarkerElement
+          disableDefaultUI: true,
+          clickableIcons: false
+        });
+
+        // Marcador AVANZADO (clase nueva; se evita el antiguo google.maps.Marker).
+        // content: nodo real creado con createElement (Google Maps lo inserta
+        // en el mapa y le aplica los estilos en línea que le demos).
+        this.pinn = document.createElement("div");
+        this.pinn.setAttribute("aria-hidden", "true");
+        this.pinn.style.cssText =
+          "width:24px;height:24px;border:3px solid #ffffff;border-radius:50%;" +
+          "box-shadow:0 3px 8px rgba(15,45,74,.45);";
+
+        this.marcador = new this.MarcadorAvanzado({
+          map: this.mapa,
+          position: posicion,
+          content: this.pinn,
+          title: "Tu ubicación"
+        });
+
+        // Círculo geográfico de 500 m centrado en las coordenadas del usuario.
+        this.circulo = new this.CirculoGoogle({
+          map: this.mapa,
+          center: posicion,
+          radius: 500,
+          strokeWeight: 2,
+          fillOpacity: 0.16,   // relleno ligero
+          strokeOpacity: 0.65  // borde ligero
+        });
+
+        this.actualizarColores(); // aplica la paleta activa actual
+        this.mensaje = "";        // ya hay mapa: se oculta el aviso
+      }
+
+      // Aplica la paleta al círculo y al marcador SIN reconstruir el mapa.
+      actualizarColores() {
+        if (!this.circulo || this.paleta.length < 4) return;
+        const [relleno, borde, pin, detalle] = this.paleta; // destructuring
+
+        // setOptions(): actualiza propiedades del círculo in situ.
+        this.circulo.setOptions({ fillColor: relleno, strokeColor: borde });
+        // Detalles visuales del marcador con otros colores de la misma paleta.
+        if (this.pinn) {
+          this.pinn.style.backgroundColor = pin;
+          this.pinn.style.borderColor = detalle;
+        }
+      }
+
+      render() {
+        const hayCoordenadas = this.latitud !== null && this.longitud !== null;
+        // Prioridad: mensaje propio del mapa; si no, el estado de permiso del padre.
+        const aviso = this.mensaje || (hayCoordenadas ? "" : this.aviso);
+        return html`
+          <article class="tarjeta">
+            <p class="marca">Mapa · Google Maps</p>
+            <h2>Tu ubicación</h2>
+
+            <!-- Contenedor del mapa: existe desde el primer render -->
+            <div class="mapa" id="mapa"></div>
+
+            <!-- Boolean Binding ?oculto: muestra el aviso solo si hay mensaje -->
+            <p class="aviso" ?oculto=${aviso === ""}>${aviso}</p>
+
+            <p class="coordenadas">
+              ${hayCoordenadas
+                ? html`Latitud <strong>${this.latitud.toFixed(4)}</strong> ·
+                       Longitud <strong>${this.longitud.toFixed(4)}</strong> ·
+                       círculo de 500 m`
+                : "Sin coordenadas: acepta el permiso de ubicación para ver el mapa."}
+            </p>
+          </article>
+        `;
+      }
+    }
+
+    customElements.define("user-location-map", UbicacionMapa);
+
+    // =========================================================
+    // 4) <app-dashboard>
+    //    Responsabilidad: estado general y coordinación.
+    //    Escucha los eventos de sus hijos y les pasa datos por propiedades.
+    // =========================================================
+    class PanelPrincipal extends LitElement {
+      // Estado compartido: paleta, ubicación, zona horaria y mensaje de estado.
+      static properties = {
+        paleta: { type: Array },
+        latitud: { type: Number },
+        longitud: { type: Number },
+        zonaHoraria: { type: String },
+        estado: { type: String },           // "cargando" | "ok" | "error"
+        mensajeEstado: { type: String }
+      };
+
+      static styles = css`
+        :host { display: block; }
+
+        /* CSS Grid: dos tarjetas arriba y el mapa a lo ancho */
+        .rejilla {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 22px;
+          width: min(100%, 1040px);
+          margin: 0 auto;
+        }
+
+        .ancho-completo { grid-column: 1 / -1; } /* el mapa ocupa todo el ancho */
+
+        .estado {
+          padding: 22px 24px;
+          border: 1px solid rgba(255, 255, 255, 0.85);
+          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.55);
+          box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
+
+        .estado__titulo {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          margin: 0 0 10px;
+          color: #2b6cb0;
+          font-size: 0.7rem;
+          font-weight: 760;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+
+        /* Punto de estado: Boolean Binding ?encendido → atributo presente/ausente */
+        .punto {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #94a3b8;
+          box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.2);
+        }
+        .punto[encendido] { background: #22c55e; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2); }
+
+        .estado p { margin: 0 0 8px; color: #40617f; font-size: 0.9rem; line-height: 1.6; }
+        .estado p:last-child { margin-bottom: 0; }
+        .estado strong { color: #0f2d4a; font-weight: 650; }
+
+        /* Muestras de la paleta activa compartida */
+        .estado__paleta { display: flex; gap: 8px; margin-top: 12px; }
+        .punto-color {
+          width: 26px;
+          height: 26px;
+          border: 2px solid #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 4px 10px rgba(59, 110, 166, 0.22);
+        }
+      `;
+
+      constructor() {
+        super();
+        // Valor inicial compartido hasta que el generador emita su primera paleta.
+        this.paleta = ["#93c5fd", "#7dd3fc", "#bfdbfe", "#e0f2fe"];
+        this.latitud = null;
+        this.longitud = null;
+        this.zonaHoraria = "Detectando…";
+        this.estado = "cargando";
+        this.mensajeEstado = "Solicitando permiso de ubicación…";
+        this.ubicacionPedida = false;
+      }
+
+      // connectedCallback: los oyentes se registran ANTES de que Lit cree
+      // los hijos (que se montan en el primer render, posterior a este método).
+      connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("paleta-cambio", this.manejarPaleta);
+        this.addEventListener("zona-horaria", this.manejarZona);
+        this.pedirUbicacion();
+      }
+
+      // disconnectedCallback: se retiran los oyentes para no dejar basura.
+      disconnectedCallback() {
+        this.removeEventListener("paleta-cambio", this.manejarPaleta);
+        this.removeEventListener("zona-horaria", this.manejarZona);
+        super.disconnectedCallback();
+      }
+
+      // Funciones flecha como campos: mantienen el "this" de la instancia.
+      manejarPaleta = (evento) => {
+        // Nueva referencia (spread) → propiedad reactiva → los hijos se actualizan.
+        this.paleta = [...evento.detail.colores];
+      };
+
+      manejarZona = (evento) => {
+        this.zonaHoraria = evento.detail.zona;
+      };
+
+      // Promesa que envuelve la API de geolocalización para usar async/await.
+      obtenerPosicion = () =>
+        new Promise((resolver, rechazar) => {
+          navigator.geolocation.getCurrentPosition(resolver, rechazar, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          });
+        });
+
+      /**
+       * Solicita la ubicación real. NO se inventan coordenadas:
+       * si el usuario deniega el permiso, se muestra el error correspondiente.
+       */
+      async pedirUbicacion() {
+        if (this.ubicacionPedida) return; // evita solicitudes repetidas
+        this.ubicacionPedida = true;
+
+        if (!navigator.geolocation) {
+          this.estado = "error";
+          this.mensajeEstado = "Este navegador no admite la geolocalización.";
+          return;
+        }
+
+        try {
+          const posicion = await this.obtenerPosicion();
+          this.latitud = posicion.coords.latitude;
+          this.longitud = posicion.coords.longitude;
+          this.estado = "ok";
+          this.mensajeEstado = "Ubicación detectada correctamente.";
+        } catch (error) {
+          // Códigos estándar: 1 permiso denegado, 2 no disponible, 3 tiempo agotado.
+          this.estado = "error";
+          this.mensajeEstado =
+            error.code === 1 ? "Permiso de ubicación denegado por el usuario."
+            : error.code === 2 ? "No se pudieron determinar las coordenadas."
+            : error.code === 3 ? "Se agotó el tiempo esperando la ubicación."
+            : "No se pudo obtener la ubicación.";
+        }
+      }
+
+      render() {
+        return html`
+          <div class="rejilla">
+            <!-- Fuente de la paleta: al generar avisa con "paleta-cambio" -->
+            <palette-generator></palette-generator>
+
+            <!-- Hijo independiente: detecta y muestra su propia hora local -->
+            <user-clock></user-clock>
+
+            <!-- Estado compartido (ubicación + zona horaria + paleta activa) -->
+            <section class="estado">
+              <p class="estado__titulo">
+                <span class="punto" ?encendido=${this.estado === "ok"}></span>
+                Estado de la aplicación
+              </p>
+              <p aria-live="polite">${this.mensajeEstado}</p>
+              <p>Zona horaria: <strong>${this.zonaHoraria}</strong></p>
+              <div class="estado__paleta" aria-label="Paleta activa">
+                ${this.paleta.map((color) => html`<span class="punto-color" style="background:${color}"></span>`)}
+              </div>
+            </section>
+
+            <!-- Property Binding (.prop): el mapa recibe datos tipados del padre -->
+            <user-location-map
+              class="ancho-completo"
+              .latitud=${this.latitud}
+              .longitud=${this.longitud}
+              .paleta=${this.paleta}
+              .aviso=${this.mensajeEstado}
+            ></user-location-map>
+          </div>
+        `;
+      }
+    }
+
+    // REGISTRO del componente principal.
+    customElements.define("app-dashboard", PanelPrincipal);
+  </script>
 </body>
 </html>
