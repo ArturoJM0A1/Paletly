@@ -31,6 +31,13 @@ Los 5 componentes:
   <user-clock>          Reloj en vivo con zona horaria
   <user-location-map>   Mapa OpenStreetMap (Leaflet) con la ubicación
 
+Dependencias (todas desde CDN, sin build ni package.json):
+
+  Lit 3         → motor de Web Components reactivos (app.js)
+  Leaflet 1.9.4 → mapa de OpenStreetMap, sin clave de API
+  RxJS 7        → programación reactiva: el intervalo de 7 s que
+                  alterna la forma del mapa (círculo ↔ cuadrado)
+
 
 ──────────────────────────────────────────────────────────────────────────────
  2. FLUJO DE LA APLICACIÓN (paso a paso)
@@ -79,9 +86,18 @@ Los 5 componentes:
   [6] Mapa
       <user-location-map> espera a que Leaflet esté disponible
       (promesa), crea el mapa centrado en las coordenadas, marca el
-      punto con un marcador y un círculo de precisión, y muestra el
-      aviso de permiso con el binding ?oculto.
-      Si cambia la paleta, recolorea marcador y círculo.
+      punto con un marcador y una forma de 500 m (círculo o cuadrado),
+      y muestra el aviso de permiso con el binding ?oculto.
+      Si cambia la paleta, recolorea marcador y formas.
+
+      · RxJS cada 7 segundos: un Observable interval(7000) alterna
+        la forma visible entre CÍRCULO (L.circle) y CUADRADO
+        (L.rectangle). Cada emisión retira una capa del mapa y añade
+        la otra (removeLayer + addTo) y actualiza la propiedad
+        reactiva "forma", que repinta el texto de las coordenadas.
+        Al desconectarse el componente se llama a unsubscribe():
+        sin eso, el intervalo seguiría emitiendo sobre un mapa
+        destruido (fuga de memoria).
 
   [7] Historial
       <app-dashboard> alimenta a <palette-history> con el array de
