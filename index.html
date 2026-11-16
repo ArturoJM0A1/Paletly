@@ -67,6 +67,39 @@
       font-weight: 780;
       letter-spacing: -0.05em;
       line-height: 1.05;
+
+      /* =========================================================
+         TÍTULO CON LOS 4 COLORES DE LA PALETA ACTIVA
+         ---------------------------------------------------------
+         Mismo truco que el logotipo: el color vive en las variables
+         CSS --paleta-1..4 que publica <app-dashboard>.
+         · background-image → degradado con los 4 colores actuales
+         · background-clip:text → recorta el degradado a LAS LETRAS
+         · color: transparent → deja ver el degradado (si no, el
+           texto taparía el fondo con su propio color)
+         · text-fill-color → su equivalente con prefijo para WebKit
+         ========================================================= */
+      background-image: linear-gradient(
+        100deg,
+        var(--paleta-1, #2b6cb0) 0%,
+        var(--paleta-2, #38bdf8) 33%,
+        var(--paleta-3, #7dd3fc) 66%,
+        var(--paleta-4, #bae6fd) 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Respaldo: si el navegador no sabe recortar el fondo al texto,
+       el título se pinta en color sólido con el 1º color de la paleta
+       (así nunca queda un título invisible). */
+    @supports not ((background-clip: text) or (-webkit-background-clip: text)) {
+      .encabezado h1 {
+        color: var(--paleta-1, #2b6cb0);
+        background-image: none;
+      }
     }
 
     /* Fila del título: logotipo + nombre, centrados (Flexbox) */
