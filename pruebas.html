@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#eaf5ff" />
+  <title>Paletly · Pruebas unitarias</title>
+
+  <!-- Estilos mínimos de la página de pruebas (los componentes siguen
+       encapsulados en su propio Shadow DOM). -->
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #0f2d4a;
+      background: linear-gradient(160deg, #f4faff 0%, #e9f4ff 55%, #f8fcff 100%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body { min-width: 320px; min-height: 100vh; margin: 0; padding: 40px 18px; }
+
+    main { width: min(100%, 780px); margin: 0 auto; }
+
+    h1 { margin: 0 0 6px; font-size: clamp(1.7rem, 5vw, 2.3rem); letter-spacing: -0.04em; }
+
+    .intro { margin: 0 0 20px; color: #40617f; line-height: 1.7; }
+    .intro a { color: #2b6cb0; font-weight: 650; }
+
+    /* Resumen global: se pinta en verde si todo pasa, en rojo si algo falla */
+    .resumen {
+      position: sticky;
+      top: 12px;
+      padding: 14px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 12px 30px rgba(59, 110, 166, 0.14);
+      font-weight: 750;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .resumen.ok { color: #15803d; }
+    .resumen.ko { color: #b91c1c; }
+
+    ul.resultados { display: grid; gap: 10px; margin: 20px 0 0; padding: 0; list-style: none; }
+
+    ul.resultados li {
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-left-width: 5px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.6);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+    ul.resultados li.pasa { border-left-color: #22c55e; }
+    ul.resultados li.falla { border-left-color: #ef4444; background: rgba(255, 255, 255, 0.85); }
+
+    /* Barra de scroll: 3 px, azul celeste translúcido (igual que la app) */
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: rgba(125, 211, 252, 0.18); }
+    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.65); border-radius: 999px; }
+    html { scrollbar-width: thin; scrollbar-color: rgba(56, 189, 248, 0.65) rgba(125, 211, 252, 0.18); }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Pruebas unitarias</h1>
+    <p class="intro">
+      Pruebas nativas en el navegador: sin Jest, Mocha ni Vitest. Se apoyan en
+      <code>customElements</code>, <code>CustomEvent</code>, <code>assert</code>
+      manual y el DOM. Reutilizan <code>app.js</code>, así que prueban exactamente
+      el mismo código que corre en <a href="./index.html">la aplicación</a>.
+      Ejecútalas sirviendo la carpeta (<code>npx serve -l 4173 .</code>) y abriendo
+      <code>http://localhost:4173/pruebas.html</code>.
+    </p>
+
+    <p class="resumen" id="resumen" aria-live="polite">Ejecutando pruebas…</p>
+    <ul class="resultados" id="resultados"></ul>
+
+    <!-- Área oculta donde se montan temporalmente los componentes de prueba -->
+    <div id="area" hidden></div>
+  </main>
+
+  <script type="module">
+    // =========================================================
+    // IMPORTACIÓN DEL CÓDIGO BAJO PRUEBA
+    // app.js registra los cinco componentes con customElements.define():
+    // importarlo es equivalente a cargar la aplicación completa.
+    // =========================================================
+    import "./app.js";
+
+    // =========================================================
+    // MINI MOTOR DE PRUEBAS NATIVO (sin dependencias)
+    // =========================================================
+    const area = document.getElementById("area");
+    const listaResultados = document.getElementById("resultados");
+    const resumen = document.getElementById("resumen");
+    let correctas = 0;
+    let fallidas = 0;
+
+    /**
+     * Ejecuta una prueba y pinta su resultado.
+     * Si la prueba lanza un error, se registra como fallida y NO interrumpe
+     * al resto: así siempre vemos el informe completo.
+     */
+    async function probar(nombre, prueba) {
+      const item = document.createElement("li"); // DOM nativo: createElement
+      try {
+        await prueba();
+        correctas++;
+        item.classList.add("pasa"); // classList para marcar el estado visual
+        item.textContent = `✔ ${nombre}`;
+      } catch (error) {
+        fallidas++;
+        item.classList.add("falla");
+        item.textContent = `✘ ${nombre} — ${error.message}`;
+        console.error(`[prueba fallida] ${nombre}`, error);
+      }
+      listaResultados.appendChild(item); // DOM nativo: appendChild
+      pintarResumen();
+    }
+
+    function pintarResumen() {
+      resumen.textContent = `${correctas} correctas · ${fallidas} fallidas de las ${correctas + fallidas} pruebas`;
+      resumen.classList.toggle("ok", fallidas === 0 && correctas > 0);
+      resumen.classList.toggle("ko", fallidas > 0);
+    }
+
+    // ---------- Asertaciones: lanzan Error con un mensaje claro ----------
+    function afirmar(condicion, mensaje) {
+      if (!condicion) throw new Error(mensaje);
+    }
+
+    function afirmarIgual(real, esperado, mensaje) {
+      if (real !== esperado) {
+        throw new Error(`${mensaje} → esperado "${esperado}", obtenido "${real}"`);
+      }
+    }
+
+    // ---------- Ayudantes de ciclo de vida ----------
+    // Crea una instancia, la conecta al DOM y espera a que Lit renderice.
+    async function montar(etiqueta) {
+      const elemento = document.createElement(etiqueta);
+      area.appendChild(elemento); // conecta → connectedCallback
+      await esperarActualizacion(elemento);
+      return elemento;
+    }
+
+    // Dos ciclos de actualización: por si updated() cambia estado reactivos.
+    async function esperarActualizacion(elemento) {
+      await elemento.updateComplete;
+      await elemento.updateComplete;
+    }
+
+    // Cede el turno al event loop para que corran micro y macrotareas pendientes.
+    function ceder() {
+      return new Promise((resolver) => setTimeout(resolver, 0));
+    }
+
+    // Desconecta el componente: dispara disconnectedCallback y libera recursos.
+    function desmontar(elemento) {
+      elemento.remove();
+    }
+
+    // =========================================================
+    // DOBLE DE PRUEBAS: navigator.geolocation
+    // Se sustituye por un doble para que la página no muestre el diálogo
+    // de permiso y para poder forzar cada código de error de forma
+    // determinista (1 denegado, 2 no disponible, 3 tiempo agotado).
+    // Al terminar se restaura el geolocalizador real del navegador.
+    // =========================================================
+    let geolocalizacionSimulada = {
+      getCurrentPosition: (correcto, error) => error({ code: 1, message: "Denegado (doble)" })
+    };
+
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      get: () => geolocalizacionSimulada
+    });
+
+    // =========================================================
+    // PRUEBAS UNITARIAS
+    // =========================================================
+    async function ejecutarPruebas() {
+      // ---------- Registro y generador de paletas ----------
+      await probar("Los cinco componentes están registrados con customElements.define()", () => {
+        ["app-dashboard", "palette-generator", "palette-history", "user-clock", "user-location-map"]
+          .forEach((etiqueta) =>
+            afirmar(!!customElements.get(etiqueta), `falta el registro de <${etiqueta}>`)
+          );
+      });
+
+      await probar("colorAleatorio() devuelve colores hexadecimales #RRGGBB en mayúsculas", () => {
+        const generador = document.createElement("palette-generator");
+        // 50 muestras para cubrir buena parte del rango de Math.random()
+        for (let intento = 0; intento < 50; intento++) {
+          const color = generador.colorAleatorio();
+          afirmarIgual(color.length, 7, "longitud del color");
+          afirmar(/^#[0-9A-F]{6}$/.test(color), `formato inválido: ${color}`);
+        }
+      });
+
+      await probar("generarPaleta() produce exactamente 4 colores válidos", () => {
+        const generador = document.createElement("palette-generator");
+        generador.generarPaleta(); // se puede invocar sin estar conectado
+        afirmarIgual(generador.paleta.length, 4, "cantidad de colores");
+        generador.paleta.forEach((color) =>
+          afirmar(/^#[0-9A-F]{6}$/.test(color), `formato inválido: ${color}`)
+        );
+      });
+
+      await probar("El botón emite 'paleta-cambio' con 4 colores, bubbles y composed", async () => {
+        const generador = await montar("palette-generator");
+
+        let eventoRecibido = null;
+        // El oyente vive en el DOCUMENTO: si el evento llega hasta aquí es que
+        // salió del Shadow DOM (eso es lo que demuestran bubbles + composed).
+        const oyente = (evento) => { eventoRecibido = evento; };
+        document.addEventListener("paleta-cambio", oyente);
+
+        generador.shadowRoot.querySelector("button").click(); // Event Binding @click
+        document.removeEventListener("paleta-cambio", oyente);
+
+        afirmar(eventoRecibido, "el evento no llegó al documento");
+        afirmarIgual(eventoRecibido.detail.colores.length, 4, "colores dentro de detail");
+        afirmarIgual(eventoRecibido.bubbles, true, "bubbles");
+        afirmarIgual(eventoRecibido.composed, true, "composed");
+        desmontar(generador);
+      });
+
+      // ---------- Historial de paletas ----------
+      await probar("app-dashboard guarda los 4 valores de cada paleta en el historial", async () => {
+        const panel = await montar("app-dashboard");
+        const colores = ["#111111", "#222222", "#333333", "#444444"];
+        const referenciaAntes = panel.historial;
+
+        // Se simula el mismo CustomEvent que emite <palette-generator>
+        panel.dispatchEvent(
+          new CustomEvent("paleta-cambio", {
+            detail: { colores },
+            bubbles: true,
+            composed: true
+          })
+        );
+        await esperarActualizacion(panel);
+
+        afirmarIgual(panel.historial.length, referenciaAntes.length + 1, "entradas del historial");
+        afirmarIgual(JSON.stringify(panel.historial[0]), JSON.stringify(colores), "última paleta guardada");
+        afirmar(panel.historial !== referenciaAntes, "debe crearse una referencia nueva de array");
+        afirmarIgual(referenciaAntes[0].length, 4, "el array anterior no debe mutarse");
+        afirmarIgual(panel.paleta[0], "#111111", "la paleta compartida debe actualizarse");
+        desmontar(panel);
+      });
+
+      await probar("<palette-history> pinta primero la más reciente y la numera en orden", async () => {
+        const historial = await montar("palette-history");
+        historial.historial = [
+          ["#AAAAAA", "#BBBBBB", "#CCCCCC", "#DDDDDD"], // índice 0 → más reciente
+          ["#111111", "#222222", "#333333", "#444444"]
+        ];
+        await esperarActualizacion(historial);
+
+        const raiz = historial.shadowRoot;
+        const numeracion = [...raiz.querySelectorAll(".entrada__indice")].map((n) => n.textContent.trim());
+        afirmarIgual(numeracion[0], "Paleta 2", "numeración de la primera entrada");
+        afirmarIgual(numeracion[1], "Paleta 1", "numeración de la segunda entrada");
+        afirmarIgual(raiz.querySelectorAll(".entrada").length, 2, "entradas pintadas");
+        afirmarIgual(raiz.querySelector(".entrada").querySelectorAll(".celda").length, 4, "muestras por paleta");
+        afirmarIgual(raiz.querySelector(".entrada__hex").textContent.includes("#AAAAAA"), true, "los 4 hex en texto");
+        afirmarIgual(raiz.querySelector(".contador").textContent.trim(), "2 paletas guardadas", "contador");
+        desmontar(historial);
+      });
+
+      await probar("<palette-history> muestra el estado vacío y el contador en singular", async () => {
+        const historial = await montar("palette-history");
+        // Sin paletas: el constructor deja historial = []
+        afirmar(raizTexto(historial, ".vacio"), "debería mostrarse el estado vacío");
+
+        historial.historial = [["#0A0A0A", "#B0B0B0", "#C0C0C0", "#D0D0D0"]];
+        await esperarActualizacion(historial);
+        afirmarIgual(
+          historial.shadowRoot.querySelector(".contador").textContent.trim(),
+          "1 paleta guardada",
+          "contador en singular"
+        );
+        desmontar(historial);
+      });
+
+      // ---------- Reloj ----------
+      await probar("<user-clock> muestra la hora en formato 24 h con su zona horaria", async () => {
+        const reloj = await montar("user-clock");
+        afirmar(/^\d{2}:\d{2}:\d{2}$/.test(reloj.hora), `formato de hora inválido: ${reloj.hora}`);
+        afirmarIgual(reloj.zonaHoraria, Intl.DateTimeFormat().resolvedOptions().timeZone, "zona horaria");
+        // La hora también debe aparecer pintada dentro del Shadow DOM
+        afirmar(/^\d{2}:\d{2}:\d{2}$/.test(reloj.shadowRoot.querySelector(".hora").textContent.trim()), "hora en el DOM");
+        desmontar(reloj);
+      });
+
+      await probar("<user-clock> deja de avanzar al desconectarse (clearInterval)", async () => {
+        const reloj = await montar("user-clock");
+        await new Promise((resolver) => setTimeout(resolver, 1100)); // un segundo en marcha
+        const horaConectado = reloj.hora;
+
+        desmontar(reloj); // disconnectedCallback → clearInterval
+        await new Promise((resolver) => setTimeout(resolver, 1100));
+
+        afirmarIgual(reloj.hora, horaConectado, "la hora no debe seguir cambiando tras desconectar");
+      });
+
+      // ---------- Geolocalización ----------
+      await probar("Con permiso denegado se muestra el error y no se inventan coordenadas", async () => {
+        geolocalizacionSimulada = {
+          getCurrentPosition: (correcto, error) => error({ code: 1, message: "Denegado" })
+        };
+        const panel = await montar("app-dashboard");
+        await ceder();
+
+        afirmarIgual(panel.estado, "error", "estado");
+        afirmarIgual(panel.mensajeEstado, "Permiso de ubicación denegado por el usuario.", "mensaje");
+        afirmarIgual(panel.latitud, null, "no debe haber latitud inventada");
+        afirmarIgual(panel.longitud, null, "no debe haber longitud inventada");
+        desmontar(panel);
+      });
+
+      await probar("Si el navegador no admite geolocalización se avisa", async () => {
+        geolocalizacionSimulada = undefined; // como si faltara la API
+        const panel = await montar("app-dashboard");
+        await ceder();
+
+        afirmarIgual(panel.estado, "error", "estado");
+        afirmarIgual(panel.mensajeEstado, "Este navegador no admite la geolocalización.", "mensaje");
+        desmontar(panel);
+      });
+
+      await probar("Con permiso concedido se guardan latitud y longitud reales", async () => {
+        geolocalizacionSimulada = {
+          getCurrentPosition: (correcto) =>
+            correcto({ coords: { latitude: 19.4326, longitude: -99.1332 } })
+        };
+        const panel = await montar("app-dashboard");
+        await ceder();
+
+        afirmarIgual(panel.estado, "ok", "estado");
+        afirmarIgual(panel.latitud, 19.4326, "latitud");
+        afirmarIgual(panel.longitud, -99.1332, "longitud");
+        afirmarIgual(panel.mensajeEstado, "Ubicación detectada correctamente.", "mensaje");
+        desmontar(panel);
+      });
+
+      // ---------- Mapa (OpenStreetMap / Leaflet) ----------
+      await probar("<user-location-map> no monta el mapa sin la librería cargada", async () => {
+        const mapa = await montar("user-location-map");
+        // En pruebas.html no se carga Leaflet: libreriaLista queda en false
+        mapa.latitud = 19.4326;
+        mapa.longitud = -99.1332;
+        await esperarActualizacion(mapa);
+
+        afirmarIgual(mapa.mapa, null, "no debe existir una instancia del mapa");
+        afirmarIgual(mapa.mensaje, "Preparando el mapa…", "mensaje de carga");
+        afirmar(
+          !mapa.shadowRoot.querySelector(".aviso").hasAttribute("oculto"),
+          "el aviso debe estar visible mientras no haya mapa"
+        );
+        desmontar(mapa);
+      });
+
+      await probar("<user-location-map> oculta el aviso con ?oculto cuando no hay mensaje", async () => {
+        const mapa = await montar("user-location-map");
+        const nodoAviso = mapa.shadowRoot.querySelector(".aviso");
+
+        mapa.aviso = "Permiso de ubicación denegado por el usuario."; // propiedad reactiva
+        await esperarActualizacion(mapa);
+        afirmar(!nodoAviso.hasAttribute("oculto"), "el aviso debe mostrarse con mensaje");
+        afirmarIgual(nodoAviso.textContent.trim(), "Permiso de ubicación denegado por el usuario.", "texto del aviso");
+
+        mapa.aviso = ""; // sin mensaje → el boolean binding ?oculto lo oculta
+        await esperarActualizacion(mapa);
+        afirmar(nodoAviso.hasAttribute("oculto"), "el aviso debe ocultarse con ?oculto");
+        desmontar(mapa);
+      });
+
+      await probar("actualizarColores() tolera no tener círculo todavía (guards)", async () => {
+        const mapa = await montar("user-location-map");
+        mapa.paleta = ["#111111", "#222222", "#333333", "#444444"]; // dispara updated()
+        await esperarActualizacion(mapa);
+
+        afirmarIgual(mapa.circulo, null, "sin librería no puede existir el círculo");
+        afirmarIgual(mapa.pinn, null, "sin librería no puede existir el marcador");
+        desmontar(mapa);
+      });
+
+      // ---------- Informe final ----------
+      // Se restaura el geolocalizador real por si alguien sigue usando la pestaña.
+      delete navigator.geolocation;
+      resumen.textContent += fallidas === 0 ? " · ¡todo en verde!" : " · revisa los fallos marcados";
+      console.info(`[pruebas] ${correctas} correctas, ${fallidas} fallidas`);
+    }
+
+    // Ayudante mínimo: comprueba que un selector exista en el Shadow DOM.
+    function raizTexto(elemento, selector) {
+      return elemento.shadowRoot.querySelector(selector);
+    }
+
+    // Las pruebas arrancan solas al cargar el módulo.
+    ejecutarPruebas();
+  </script>
+</body>
+</html>
