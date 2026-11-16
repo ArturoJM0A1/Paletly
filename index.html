@@ -835,7 +835,10 @@
       };
 
       static styles = css`
-        :host { display: block; }
+        /* width:100% → el host ocupa toda la fila de la rejilla exterior
+           (.pagina usa justify-items:center, que si no lo encogería) y así
+           la rejilla interna puede repartir sus dos columnas. */
+        :host { display: block; width: 100%; }
 
         /* CSS Grid: 4 tarjetas en dos columnas (2×2) y el mapa a lo ancho.
            Con minmax(340px, 1fr) y un contenedor de 1040px caben siempre
