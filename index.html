@@ -8,14 +8,14 @@
 
   <!--
     =========================================================
-    GOOGLE MAPS JAVASCRIPT API (biblioteca asíncrona)
+    LEAFLET + OPENSTREETMAP (sin clave de API)
     =========================================================
-    Clave de API facilitada para las pruebas. Protegela: en Google Cloud
-    restringela por HTTP referrer y no la publiques en repositorios publicos.
-    Con "loading=async" la API se carga en segundo plano y se consume
-    mediante google.maps.importLibrary() (bibliotecas "maps" y "marker").
+    Leaflet dibuja los mapas de OpenStreetMap: basta con este script
+    (expone el global L). La hoja de estilos de Leaflet se inyecta
+    dentro del Shadow DOM del componente, porque alli es donde hace
+    falta (los estilos del documento no entran en el Shadow DOM).
   -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZa9NjPPh3NGFnLsZis0j14pxYlPMGw40&v=weekly&loading=async" async defer></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 
   <!--
     =========================================================
@@ -78,6 +78,25 @@
     }
 
     .pie { color: #5b7fa6; font-size: 0.8rem; text-align: center; }
+
+    /* =========================================================
+       BARRA DE SCROLL VERTICAL
+       3 px de ancho, azul celeste con transparencia.
+       -webkit-scrollbar → Chrome/Edge/Safari
+       scrollbar-width/scrollbar-color → Firefox
+       ========================================================= */
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: rgba(125, 211, 252, 0.18); }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.65);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.9); }
+
+    html {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.65) rgba(125, 211, 252, 0.18);
+    }
 
     @media (max-width: 560px) {
       .pagina { gap: 20px; padding: 32px 14px; }
@@ -387,13 +406,11 @@
 
     customElements.define("user-clock", RelojUsuario);
 
-    // id de mapa demo oficial para usar AdvancedMarkerElement.
-    const DEMO_MAP_ID = "DEMO_MAP_ID";
-
     // =========================================================
     // 3) <user-location-map>
-    //    Responsabilidad: pintar coordenadas en Google Maps con un
-    //    marcador avanzado y un círculo de 500 m coloreado con la paleta.
+    //    Responsabilidad: pintar las coordenadas sobre OpenStreetMap
+    //    (Leaflet) con un marcador y un círculo de 500 m coloreado
+    //    con la paleta activa. No necesita clave de API.
     // =========================================================
     class UbicacionMapa extends LitElement {
       // Tipos: Number (coordenadas) y Array (paleta activa).
@@ -411,10 +428,12 @@
           padding: 24px;
           border: 1px solid rgba(255, 255, 255, 0.85);
           border-radius: 24px;
-          background: rgba(255, 255, 255, 0.55);
+          /* Sin backdrop-filter aquí: un desenfoque de cristal sobre el lienzo
+             del mapa hace que los tiles se rastericen a menor resolución y el
+             mapa se vea borroso. Se mantiene el efecto cristal con el fondo
+             blanco translúcido. */
+          background: rgba(255, 255, 255, 0.72);
           box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
         }
 
         .marca {
@@ -436,7 +455,9 @@
           box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85);
         }
 
-        /* Aviso de carga / error / permiso denegado (superpuesto al mapa) */
+        /* Aviso de carga / error / permiso denegado (superpuesto al mapa).
+           Sin blur: solo se muestra cuando aún no hay mapa, y así el texto
+           siempre se ve nítido. */
         .aviso {
           position: absolute;
           inset: 0;
@@ -444,13 +465,11 @@
           place-content: center;
           margin: 0;
           padding: 20px;
-          background: rgba(255, 255, 255, 0.74);
+          background: rgba(255, 255, 255, 0.88);
           color: #1d5b96;
           font-size: 0.92rem;
           line-height: 1.6;
           text-align: center;
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
         }
 
         /* El atributo [hidden] lo pone el boolean binding ?oculto;
