@@ -14,6 +14,10 @@
 //                      vuelve a ejecutar render() y actualiza solo lo necesario
 // =========================================================
     import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+    // RxJS (programación reactiva con Observables) desde CDN, sin build.
+    // Se usa interval(): emite un número cada X milisegundos, ideal para
+    // tareas periódicas limpias (suscripción + cancelación explícita).
+    import { interval } from "https://cdn.jsdelivr.net/npm/rxjs@7.8.1/+esm";
 
     // =========================================================
     // 1) <palette-generator>
@@ -435,19 +439,24 @@
     // =========================================================
     // 4) <user-location-map>
     //    Responsabilidad: pintar las coordenadas sobre OpenStreetMap
-    //    (Leaflet) con un marcador y un círculo de 500 m coloreado
-    //    con la paleta activa. No necesita clave de API.
+    //    (Leaflet) con un marcador y una forma de 500 m coloreada con
+    //    la paleta activa. Cada 7 segundos, mediante un Observable de
+    //    RxJS, la forma alterna entre CÍRCULO y CUADRADO.
+    //    No necesita clave de API.
     // =========================================================
     class UbicacionMapa extends LitElement {
-      // Tipos: Number (coordenadas), Array (paleta) y String (mensaje del mapa).
+      // Tipos: Number (coordenadas), Array (paleta), String (mensaje y forma).
       // "mensaje" debe ser reactivo: se cambia dentro de updated() y sin ello
       // el aviso del DOM no se volvería a pintar (error detectado por las pruebas).
+      // "forma" también es reactiva: la alterna un Observable de RxJS y debe
+      // repintar el texto "círculo/cuadrado de 500 m" en el Shadow DOM.
       static properties = {
         latitud: { type: Number },
         longitud: { type: Number },
         paleta: { type: Array },
         aviso: { type: String },   // String: estado de permiso recibido del padre
-        mensaje: { type: String }  // String: carga / error del propio mapa
+        mensaje: { type: String }, // String: carga / error del propio mapa
+        forma: { type: String }    // String: "círculo" | "cuadrado" (alterna cada 7 s)
       };
 
       static styles = css`
@@ -522,10 +531,13 @@
         this.paleta = [];
         this.aviso = "Solicitando permiso de ubicación…";
         this.mensaje = ""; // mensajes propios del mapa (carga o error de Leaflet)
+        this.forma = "círculo"; // estado inicial; lo alterna el Observable de RxJS
         // Campos NO reactivos: solo guardan referencias para no recrear nada.
         this.mapa = null;
         this.marcador = null;
         this.circulo = null;
+        this.cuadrado = null;          // L.rectangle: la otra forma de 500 m
+        this.suscripcionForma = null;  // suscripción de RxJS (se cancela al desconectar)
         this.pinn = null;
         this.libreriaLista = false;
         this.errorLibreria = false;
@@ -573,12 +585,14 @@
 
         if (!this.mapa) return;
 
-        // Coordenadas nuevas → reubicamos vista, marcador y círculo (sin recrear).
+        // Coordenadas nuevas → reubicamos vista, marcador y AMBAS formas
+        // (círculo y cuadrado) sin recrear el mapa.
         if (propiedadesAnteriores.has("latitud") || propiedadesAnteriores.has("longitud")) {
           const posicion = [this.latitud, this.longitud]; // Leaflet usa [lat, lng]
           this.mapa.setView(posicion, this.mapa.getZoom());
           this.marcador.setLatLng(posicion);
-          this.circulo.setLatLng(posicion); // centro idéntico al del marcador
+          if (this.circulo) this.circulo.setLatLng(posicion); // centro idéntico al del marcador
+          if (this.cuadrado) this.cuadrado.setBounds(this.limites(posicion)); // mismo centro
         }
 
         // Paleta nueva → solo cambian los colores del círculo y del marcador.
@@ -587,10 +601,18 @@
 
       // disconnectedCallback: liberamos el mapa y sus recursos al retirarse.
       disconnectedCallback() {
+        // RxJS: cancelar la suscripción detiene el intervalo de 7 s.
+        // Sin esto, el Observable seguiría emitiendo sobre un mapa
+        // ya destruido (fuga de memoria / errores en consola).
+        if (this.suscripcionForma) {
+          this.suscripcionForma.unsubscribe();
+          this.suscripcionForma = null;
+        }
         if (this.mapa) this.mapa.remove(); // Leaflet limpia tiles, eventos y nodos
         this.mapa = null;
         this.marcador = null;
         this.circulo = null;
+        this.cuadrado = null;
         super.disconnectedCallback();
       }
 
@@ -649,17 +671,90 @@
           opacity: 0.65        // borde ligero
         }).addTo(this.mapa);
 
+        // Cuadrado de 500 m de semilado: MISMO centro y MISMO estilo que el
+        // círculo, pero creado SIN addTo() → empieza fuera del mapa y solo
+        // se muestra cuando el Observable de RxJS alterna la forma.
+        this.cuadrado = L.rectangle(this.limites(posicion), {
+          weight: 2,
+          fillOpacity: 0.16,
+          opacity: 0.65
+        });
+
+        // =====================================================
+        // RXJS · ALTERNAR FORMA CADA 7 SEGUNDOS
+        // -----------------------------------------------------
+        // interval(7000) es un Observable que emite 0, 1, 2… cada
+        // 7000 ms (como setInterval, pero cancelable de forma
+        // limpia con unsubscribe()).
+        //   indice+1 → la 1ª emisión (a los 7 s) pasa de 0 a 1 y
+        //   muestra el cuadrado; la siguiente vuelve al círculo…
+        //   alternando círculo ↔ cuadrado para siempre.
+        // El parámetro "indice" es el valor emitido por RxJS.
+        // =====================================================
+        this.suscripcionForma = interval(7000).subscribe((indice) => {
+          this.alternarForma(indice + 1);
+        });
+
         this.actualizarColores(); // aplica la paleta activa actual
         this.mensaje = "";        // ya hay mapa: se oculta el aviso
       }
 
-      // Aplica la paleta al círculo y al marcador SIN reconstruir el mapa.
+      /**
+       * Devuelve los límites [[sur, oeste], [norte, este]] de un cuadrado
+       * de 500 m de semilado (1000 × 1000 m, igual que el diámetro del
+       * círculo) alrededor de la posición dada.
+       * Fórmula: 1 grado de latitud ≈ 111 320 m; de longitud, ese mismo
+       * valor multiplicado por el coseno de la latitud (se estrecha hacia
+       * los polos).
+       */
+      limites(posicion) {
+        const [lat, lng] = posicion;
+        const metrosPorGradoLat = 111320;
+        const metrosPorGradoLng = 111320 * Math.cos((lat * Math.PI) / 180);
+        const desplazamientoLat = 500 / metrosPorGradoLat;
+        const desplazamientoLng = 500 / metrosPorGradoLng;
+        return [
+          [lat - desplazamientoLat, lng - desplazamientoLng],
+          [lat + desplazamientoLat, lng + desplazamientoLng]
+        ];
+      }
+
+      /**
+       * Alterna la forma visible: si se muestra el círculo se oculta el
+       * cuadrado y viceversa. Se ejecuta con cada emisión de RxJS.
+       * @param {number} indice - valor emitido por el Observable
+       *                          (impar → cuadrado, par → círculo)
+       */
+      alternarForma = (indice) => {
+        // Guardia: sin mapa (o sin Leaflet, como en las pruebas) no hay nada que alternar.
+        if (!this.mapa || !this.circulo || !this.cuadrado) return;
+
+        const mostrarCuadrado = indice % 2 !== 0;
+
+        if (mostrarCuadrado) {
+          this.mapa.removeLayer(this.circulo); // sale el círculo…
+          this.cuadrado.addTo(this.mapa);      // …entra el cuadrado
+          this.forma = "cuadrado";             // propiedad reactiva → repinta el texto
+        } else {
+          this.mapa.removeLayer(this.cuadrado);
+          this.circulo.addTo(this.mapa);
+          this.forma = "círculo";
+        }
+
+        // La capa recién añadida nace sin color: se le aplica la paleta actual.
+        this.actualizarColores();
+      };
+
+      // Aplica la paleta al círculo, al cuadrado y al marcador SIN reconstruir el mapa.
       actualizarColores() {
-        if (!this.circulo || this.paleta.length < 4) return;
+        if (this.paleta.length < 4) return; // aún no hay paleta
         const [relleno, borde, pin, detalle] = this.paleta; // destructuring
 
-        // setStyle(): actualiza el círculo in situ (mismo objeto, mismos tiles).
-        this.circulo.setStyle({ fillColor: relleno, color: borde });
+        // Guards: sin librería (pruebas) o sin capas aún no hay nada que pintar.
+        const estilo = { fillColor: relleno, color: borde };
+        // setStyle(): actualiza cada capa in situ (mismo objeto, mismos tiles).
+        if (this.circulo) this.circulo.setStyle(estilo);
+        if (this.cuadrado) this.cuadrado.setStyle(estilo);
         // Detalles visuales del marcador con otros colores de la misma paleta.
         if (this.pinn) {
           this.pinn.style.backgroundColor = pin;
@@ -686,7 +781,7 @@
               ${hayCoordenadas
                 ? html`Latitud <strong>${this.latitud.toFixed(4)}</strong> ·
                        Longitud <strong>${this.longitud.toFixed(4)}</strong> ·
-                       círculo de 500 m`
+                       ${this.forma} de 500 m`
                 : "Sin coordenadas: acepta el permiso de ubicación para ver el mapa."}
             </p>
           </article>
