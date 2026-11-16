@@ -319,9 +319,17 @@
         await ceder();
 
         afirmarIgual(panel.estado, "error", "estado");
-        afirmarIgual(panel.mensajeEstado, "Permiso de ubicación denegado por el usuario.", "mensaje");
+        afirmarIgual(
+          panel.mensajeEstado,
+          "Permiso de ubicación denegado: actívalo en el candado de la barra de direcciones y pulsa «Reintentar ubicación».",
+          "mensaje"
+        );
         afirmarIgual(panel.latitud, null, "no debe haber latitud inventada");
         afirmarIgual(panel.longitud, null, "no debe haber longitud inventada");
+        afirmar(
+          panel.shadowRoot.querySelector(".boton-reintento"),
+          "debe ofrecerse un botón para reintentar la ubicación"
+        );
         desmontar(panel);
       });
 
@@ -347,6 +355,43 @@
         afirmarIgual(panel.latitud, 19.4326, "latitud");
         afirmarIgual(panel.longitud, -99.1332, "longitud");
         afirmarIgual(panel.mensajeEstado, "Ubicación detectada correctamente.", "mensaje");
+        desmontar(panel);
+      });
+
+      await probar("El botón «Reintentar ubicación» vuelve a pedirla y registra la precisión", async () => {
+        let llamadas = 0;
+        geolocalizacionSimulada = {
+          getCurrentPosition: (correcto, error) => { llamadas++; error({ code: 3, message: "tiempo agotado" }); }
+        };
+        const panel = await montar("app-dashboard");
+        await ceder();
+        await esperarActualizacion(panel);
+
+        afirmarIgual(llamadas, 1, "primera solicitud");
+        afirmarIgual(panel.estado, "error", "estado tras el fallo");
+        afirmar(panel.shadowRoot.querySelector(".boton-reintento"), "debe mostrarse el botón de reintento");
+
+        // Simula que el usuario concede el permiso y el navegador responde
+        // con una precisión de 25 metros.
+        geolocalizacionSimulada = {
+          getCurrentPosition: (correcto) => {
+            llamadas++;
+            correcto({ coords: { latitude: 40.4168, longitude: -3.7038, accuracy: 25 } });
+          }
+        };
+        panel.shadowRoot.querySelector(".boton-reintento").click(); // Event Binding @click
+        await ceder();
+        await esperarActualizacion(panel);
+
+        afirmarIgual(llamadas, 2, "segunda solicitud tras reintentar");
+        afirmarIgual(panel.estado, "ok", "estado tras el reintento");
+        afirmarIgual(panel.latitud, 40.4168, "latitud");
+        afirmarIgual(Math.round(panel.precision), 25, "precisión en metros");
+        afirmar(
+          panel.shadowRoot.querySelector(".estado").textContent.includes("±25 m"),
+          "la precisión debe verse en el panel"
+        );
+        afirmar(!panel.shadowRoot.querySelector(".boton-reintento"), "el botón desaparece al localizar");
         desmontar(panel);
       });
 

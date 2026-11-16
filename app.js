@@ -710,7 +710,8 @@
         longitud: { type: Number },
         zonaHoraria: { type: String },
         estado: { type: String },           // "cargando" | "ok" | "error"
-        mensajeEstado: { type: String }
+        mensajeEstado: { type: String },
+        precision: { type: Number }         // Number: precisión en metros (± m)
       };
 
       static styles = css`
@@ -765,8 +766,27 @@
         .punto[encendido] { background: #22c55e; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2); }
 
         .estado p { margin: 0 0 8px; color: #40617f; font-size: 0.9rem; line-height: 1.6; }
-        .estado p:last-child { margin-bottom: 0; }
+        .estado p:last-of-type { margin-bottom: 0; }
         .estado strong { color: #0f2d4a; font-weight: 650; }
+
+        /* Botón de reintento de la geolocalización (aparece solo si falló) */
+        .boton-reintento {
+          margin-top: 14px;
+          padding: 10px 16px;
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          border-radius: 12px;
+          background: linear-gradient(110deg, #60a5fa, #7dd3fc);
+          box-shadow: 0 8px 18px rgba(59, 130, 246, 0.25);
+          color: #ffffff;
+          cursor: pointer;
+          font: inherit;
+          font-size: 0.85rem;
+          font-weight: 720;
+          transition: transform 160ms ease, filter 160ms ease;
+        }
+        .boton-reintento:hover { filter: brightness(1.06); transform: translateY(-1px); }
+        .boton-reintento:active { transform: translateY(0); }
+        .boton-reintento:focus-visible { outline: 3px solid #0f2d4a; outline-offset: 2px; }
 
         /* Muestras de la paleta activa compartida */
         .estado__paleta { display: flex; gap: 8px; margin-top: 12px; }
@@ -790,6 +810,7 @@
         this.zonaHoraria = "Detectando…";
         this.estado = "cargando";
         this.mensajeEstado = "Solicitando permiso de ubicación…";
+        this.precision = null;   // precisión en metros; null hasta tener ubicación
         this.ubicacionPedida = false;
       }
 
@@ -842,8 +863,10 @@
        * si el usuario deniega el permiso, se muestra el error correspondiente.
        */
       async pedirUbicacion() {
-        if (this.ubicacionPedida) return; // evita solicitudes repetidas
+        if (this.ubicacionPedida) return; // evita solicitudes simultáneas
         this.ubicacionPedida = true;
+        this.estado = "cargando";
+        this.mensajeEstado = "Solicitando permiso de ubicación…";
 
         if (!navigator.geolocation) {
           this.estado = "error";
@@ -855,18 +878,41 @@
           const posicion = await this.obtenerPosicion();
           this.latitud = posicion.coords.latitude;
           this.longitud = posicion.coords.longitude;
+
+          // Precisión en metros (coords.accuracy). Si es enorme, el navegador
+          // está estimando la posición por IP (VPN, proxy o red corporativa)
+          // en lugar de una posición real precisa: útil para diagnosticar
+          // por qué el mapa no coincide con la ubicación esperada.
+          this.precision = posicion.coords.accuracy ?? null;
           this.estado = "ok";
-          this.mensajeEstado = "Ubicación detectada correctamente.";
+          this.mensajeEstado =
+            this.precision !== null && this.precision > 5000
+              ? "Ubicación aproximada: el navegador la estima por IP (VPN, proxy o red corporativa)."
+              : "Ubicación detectada correctamente.";
         } catch (error) {
           // Códigos estándar: 1 permiso denegado, 2 no disponible, 3 tiempo agotado.
           this.estado = "error";
+          this.precision = null;
           this.mensajeEstado =
-            error.code === 1 ? "Permiso de ubicación denegado por el usuario."
-            : error.code === 2 ? "No se pudieron determinar las coordenadas."
-            : error.code === 3 ? "Se agotó el tiempo esperando la ubicación."
-            : "No se pudo obtener la ubicación.";
+            error.code === 1
+              ? "Permiso de ubicación denegado: actívalo en el candado de la barra de direcciones y pulsa «Reintentar ubicación»."
+              : error.code === 2
+                ? "No se pudieron determinar las coordenadas."
+                : error.code === 3
+                  ? "Se agotó el tiempo esperando la ubicación; inténtalo de nuevo."
+                  : "No se pudo obtener la ubicación.";
         }
       }
+
+      /**
+       * Vuelve a solicitar la ubicación. El navegador solo muestra el diálogo
+       * de permiso una vez: si se denegó (o falló por tiempo), sin este
+       * reintento la aplicación no podría volver a pedirla en toda la sesión.
+       */
+      reintentarUbicacion = () => {
+        this.ubicacionPedida = false; // desbloquea la única solicitud en curso
+        this.pedirUbicacion();
+      };
 
       render() {
         return html`
@@ -887,10 +933,25 @@
                 Estado de la aplicación
               </p>
               <p aria-live="polite">${this.mensajeEstado}</p>
+
+              <!-- Precisión en metros: diagnostica ubicación aproximada -->
+              ${this.estado === "ok" && this.precision !== null
+                ? html`<p>Precisión estimada: <strong>±${Math.round(this.precision)} m</strong></p>`
+                : ""}
+
               <p>Zona horaria: <strong>${this.zonaHoraria}</strong></p>
               <div class="estado__paleta" aria-label="Paleta activa">
                 ${this.paleta.map((color) => html`<span class="punto-color" style="background:${color}"></span>`)}
               </div>
+
+              <!-- Solo aparece si falló la ubicación: permite volver a pedirla -->
+              ${this.estado === "error"
+                ? html`
+                    <button type="button" class="boton-reintento" @click=${this.reintentarUbicacion}>
+                      Reintentar ubicación
+                    </button>
+                  `
+                : ""}
             </section>
 
             <!-- Property Binding (.prop): el mapa recibe datos tipados del padre -->
