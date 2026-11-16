@@ -830,6 +830,32 @@
         super.disconnectedCallback();
       }
 
+      // firstUpdated(): se ejecuta UNA sola vez, después del primer render.
+      // Publica ya la paleta inicial para que el logotipo nazca coloreado.
+      firstUpdated() {
+        this.publicarPaleta();
+      }
+
+      /**
+       * updated(): se ejecuta DESPUÉS de cada render del componente.
+       * Cuando cambia la paleta se publican sus cuatro colores como variables
+       * CSS sobre <html>. Es el puente con el logotipo del encabezado, que
+       * vive en el documento principal y FUERA de cualquier Shadow DOM: allí
+       * no llegan las propiedades de Lit, pero sí las variables CSS heredadas.
+       */
+      updated(propiedadesAnteriores) {
+        if (propiedadesAnteriores.has("paleta")) this.publicarPaleta();
+      }
+
+      // Recorre los cuatro colores y los escribe con setProperty().
+      // El logotipo los lee con var(--paleta-1) y cambia de color solo,
+      // sin manipular su nodo (Lit/JS no deben tocar lo que el CSS gobierna).
+      publicarPaleta() {
+        this.paleta.forEach((color, indice) => {
+          document.documentElement.style.setProperty(`--paleta-${indice + 1}`, color);
+        });
+      }
+
       // Funciones flecha como campos: mantienen el "this" de la instancia.
       manejarPaleta = (evento) => {
         const colores = evento.detail.colores; // los 4 colores recibidos
