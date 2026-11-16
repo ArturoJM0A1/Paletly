@@ -1,0 +1,231 @@
+════════════════════════════════════════════════════════════════════════════
+                          PALETLY · FLUJO DE LA APP
+              Web Components + LitElement (JavaScript vanilla)
+════════════════════════════════════════════════════════════════════════════
+
+Este documento explica, sin código, cómo funciona la aplicación y qué
+características de Web Components y LitElement se emplean en ella.
+
+
+──────────────────────────────────────────────────────────────────────────────
+ 1. ARQUITECTURA (3 archivos, el mínimo posible)
+──────────────────────────────────────────────────────────────────────────────
+
+  index.html  → Maquetación (HTML) + estilos globales (CSS Glassmorphism,
+                barra de scroll de 3 px, logotipo con clip-path).
+                Enlaza app.js y da enlace a las pruebas.
+
+  app.js      → Módulo ESM con los 5 componentes (único código fuente).
+                Importado por index.html (la app) y por pruebas.html
+                (las pruebas), así el código se escribe UNA sola vez.
+
+  pruebas.html→ 16 pruebas unitarias nativas (sin Jest/Mocha/Vitest) que
+                importan ./app.js y prueban exactamente el mismo código
+                que corre la aplicación.
+
+Los 5 componentes:
+
+  <app-dashboard>       Panel principal: estado general y coordinación
+  <palette-generator>   Generador de 4 colores aleatorios
+  <palette-history>     Historial de paletas generadas
+  <user-clock>          Reloj en vivo con zona horaria
+  <user-location-map>   Mapa OpenStreetMap (Leaflet) con la ubicación
+
+
+──────────────────────────────────────────────────────────────────────────────
+ 2. FLUJO DE LA APLICACIÓN (paso a paso)
+──────────────────────────────────────────────────────────────────────────────
+
+  [1] Carga de la página
+      index.html carga Leaflet (defer) y app.js (módulo ESM).
+      app.js ejecuta customElements.define() para registrar los 5
+      componentes; el navegador convierte cada etiqueta en un objeto.
+
+  [2] Arranque del <app-dashboard> (el componente "madre")
+      · constructor() → inicializa el estado: paleta de 4 colores,
+        historial vacío, coordenadas null, estado "cargando".
+      · firstUpdated() → publica la paleta inicial como variables CSS
+        (--paleta-1..4) para que el logotipo nazca coloreado.
+      · Pide la ubicación (geolocalización) y la zona horaria.
+      · Renderiza dentro de su Shadow DOM los 4 componentes hijos,
+        pasándoles datos por PROPIEDADES (paleta, historial, aviso...).
+
+  [3] Generar una paleta
+      · El usuario pulsa el botón "Generar nueva paleta".
+      · <palette-generator> genera 4 colores #RRGGBB aleatorios.
+      · Emite el evento "paleta-cambio" (bubbles + composed) con los 4
+        colores en detail; el evento SALE del Shadow DOM.
+      · <app-dashboard> lo escucha, guarda los 4 valores en el historial
+        (creando un array nuevo, sin mutar el anterior) y actualiza la
+        paleta compartida.
+      · Lit detecta el cambio de propiedad → vuelve a ejecutar render()
+        solo en lo necesario → se actualizan hijos, historial y estado.
+      · updated() publica la nueva paleta como variables CSS → el
+        logotipo del encabezado cambia de color con una transición.
+
+  [4] Reloj
+      <user-clock> inicia un setInterval cada segundo, formatea la hora
+      con Intl (24 h + zona horaria) y la pinta. Al desconectarse,
+      disconnectedCallback limpia el intervalo (no deja basura).
+
+  [5] Ubicación real (sin coordenadas inventadas)
+      · El navegador pide permiso (geolocalización).
+      · Éxito → latitud/longitud reales + precisión (± m) → se pasan a
+        <user-location-map> por propiedades.
+      · Fallo → mensaje según el código (1 denegado, 2 no disponible,
+        3 tiempo agotado) + botón "Reintentar ubicación". Las
+        coordenadas se quedan en null: NUNCA se inventan datos.
+
+  [6] Mapa
+      <user-location-map> espera a que Leaflet esté disponible
+      (promesa), crea el mapa centrado en las coordenadas, marca el
+      punto con un marcador y un círculo de precisión, y muestra el
+      aviso de permiso con el binding ?oculto.
+      Si cambia la paleta, recolorea marcador y círculo.
+
+  [7] Historial
+      <app-dashboard> alimenta a <palette-history> con el array de
+      paletas; este pinta la más reciente primero, la numera en orden
+      inverso y muestra el contador en singular/plural (o el estado
+      vacío si aún no hay paletas).
+
+  [8] Logotipo
+      El div del encabezado vive FUERA de todo Shadow DOM, así que no
+      recibe propiedades de Lit: recibe el color por variables CSS
+      heredadas desde <html>, que actualiza el dashboard con setProperty().
+
+
+──────────────────────────────────────────────────────────────────────────────
+ 3. CARACTERÍSTICAS DE WEB COMPONENTS UTILIZADAS
+──────────────────────────────────────────────────────────────────────────────
+
+  · customElements.define(etiqueta, Clase)
+        Registra cada componente en el navegador. A partir de ahí,
+        usar <palette-generator> en el HTML crea una INSTANCIA de la
+        clase, con su propio estado y ciclo de vida.
+
+  · Ciclo de vida del elemento
+        constructor()        → inicialización (una sola vez)
+        connectedCallback()  → al insertarse en el DOM (arranca reloj,
+                               oyentes de eventos, geolocalización)
+        disconnectedCallback()→ al retirarse (limpia intervalos y oyentes)
+        firstUpdated() / updated() → propios de Lit (ver apartado 4)
+
+  · Shadow DOM (encapsulamiento)
+        Cada componente renderiza su HTML y CSS en un árbol aislado:
+        los estilos de index.html no afectan a los componentes ni al
+        revés. Se accede a él con elemento.shadowRoot.
+
+  · CustomEvent (eventos propios)
+        <palette-generator> emite "paleta-cambio" con detail, bubbles
+        y composed: la COMBINACIÓN de bubbles + composed es lo que
+        permite que el evento cruce el Shadow DOM y llegue hasta
+        document. Es la vía de comunicación de HIJO → PADRE.
+
+  · Comunicación por propiedades (PADRE → HIJO)
+        <app-dashboard> pasa datos a sus hijos escribiendo propiedades
+        (this.paleta, this.historial, this.aviso...). Lit las vuelve
+        a pintar automáticamente al cambiar.
+
+  · Templates <template> y herencia de HTML/CSS nativos
+        No se usa el template element, pero sí el patrón de
+        componentes como "cajas negras" con su propio marcado.
+
+
+──────────────────────────────────────────────────────────────────────────────
+ 4. CARACTERÍSTICAS DE LitElement UTILIZADAS
+──────────────────────────────────────────────────────────────────────────────
+
+  · class X extends LitElement + constructor() con super()
+        Herencia: cada componente reutiliza todo el motor de Lit
+        (render, reactividad, estilos) sin repetir código.
+
+  · static properties (reactividad declarativa)
+        Lista las propiedades observadas. Al cambiar una, Lit vuelve
+        a ejecutar render() y actualiza SOLO lo que cambió (diffing).
+        Se declaran con su tipo: { type: Number }, { type: Array },
+        { type: String }.
+        Ejemplo clave: "mensaje" en <user-location-map> debe estar en
+        esta lista; si no, un error pintado dentro de updated() nunca
+        llegaría al DOM (fallo detectado por las pruebas unitarias).
+
+  · static styles = css`...`
+        CSS dentro del componente, encapsulado en su Shadow DOM.
+        Lit lo compila una sola vez y lo reutiliza en todas las
+        instancias (buen rendimiento y sin fugas de estilos).
+
+  · render() con template literals (html``)
+        Método puro: devuelve el HTML del componente a partir del
+        estado. Se ejecuta solo cuando cambia algo reactivo.
+
+  · Bindings del template
+        ${...}          → interpolación de valores / listas con map()
+        .prop=${valor}  → propiedades del DOM (ej. .aviso)
+        ?atributo=bool  → presencia/ausencia (ej. ?oculto)
+        @evento=${fn}   → event binding (ej. @click=${this.generar})
+
+  · updated(propiedadesAnteriores)
+        Se ejecuta DESPUÉS de cada render. Se usa para efectos
+        secundarios: publicar variables CSS de la paleta, recolorear
+        el mapa, etc. El Map de propiedades anteriores permite
+        reaccionar solo cuando cambió una propiedad concreta.
+
+  · await this.updateComplete
+        Promesa que resuelve cuando el DOM ya está pintado; usada
+        para operar sobre el Shadow DOM con seguridad (también en
+        las pruebas).
+
+  · hasChanged (control fino de la reactividad)
+        Evita re-renders inútiles: por ejemplo, un String de estado
+        solo dispara actualización si el VALOR cambia, lo que
+        previene bucles de render.
+
+  · Lit y los eventos
+        Lit no gestiona eventos: se usan listeners nativos
+        (addEventListener) y CustomEvent, respetando el estándar.
+
+
+──────────────────────────────────────────────────────────────────────────────
+ 5. PRUEBAS UNITARIAS NATIVAS (pruebas.html)
+──────────────────────────────────────────────────────────────────────────────
+
+  · Mini motor propio: probar(nombre, prueba) ejecuta cada prueba,
+    captura el error y pinta ✔/✘ (createElement, appendChild, classList).
+  · Asertaciones manuales: afirmar() y afirmarIgual() lanzan Error
+    con un mensaje descriptivo.
+  · Ayudantes de ciclo de vida: montar() conecta el componente y
+    espera dos updateComplete; desmontar() dispara disconnectedCallback.
+  · Doble de navigator.geolocation con Object.defineProperty:
+    evita el diálogo de permiso y fuerza los códigos 1/2/3 de forma
+    determinista; se restaura al terminar.
+  · Cubren: registro, generador (formato y nº de colores), evento
+    paleta-cambio (bubbles/composed hasta document), historial,
+    reloj (formato y clearInterval), geolocalización (los 3 errores
+    + éxito + reintento + precisión) y mapa (guards sin librería,
+    aviso con ?oculto).
+
+  Resultado: 16 correctas · 0 fallidas · ¡todo en verde!
+
+  Cómo ejecutarlas:
+      npx serve -l 4173 .
+      http://localhost:4173/pruebas.html
+
+
+──────────────────────────────────────────────────────────────────────────────
+ 6. CONCEPTO CLAVE: LOS DOS SENTIDOS DE LA COMUNICACIÓN
+──────────────────────────────────────────────────────────────────────────────
+
+  HIJO → PADRE   por EVENTOS con bubbles + composed
+                 (palette-generator → app-dashboard: "paleta-cambio")
+
+  PADRE → HIJO   por PROPIEDADES reactivas
+                 (app-dashboard → palette-history: historial, paleta)
+
+  HIJO → FUERA   por variables CSS heredadas
+                 (app-dashboard → logotipo del documento: --paleta-N)
+
+  Este patrón unidireccional, más la reactividad de Lit, es lo que
+  mantiene el estado siempre coherente: un solo origen de verdad
+  (el dashboard) y componentes que solo pintan lo que les llega.
+
+════════════════════════════════════════════════════════════════════════════
