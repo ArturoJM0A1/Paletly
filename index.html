@@ -492,41 +492,40 @@
         this.longitud = null;
         this.paleta = [];
         this.aviso = "Solicitando permiso de ubicación…";
-        this.mensaje = ""; // mensajes propios del mapa (carga o error de la API)
+        this.mensaje = ""; // mensajes propios del mapa (carga o error de Leaflet)
         // Campos NO reactivos: solo guardan referencias para no recrear nada.
         this.mapa = null;
         this.marcador = null;
         this.circulo = null;
         this.pinn = null;
-        this.apiLista = false;
-        this.errorApi = false;
+        this.libreriaLista = false;
+        this.errorLibreria = false;
       }
 
       /**
        * firstUpdated(): se ejecuta UNA sola vez, después del primer render,
        * momento en el que el contenedor interno ya existe en el Shadow DOM.
-       * Aquí inicializamos Google Maps (una única vez para toda la vida útil).
+       * Aquí inicializamos el mapa (una única vez para toda la vida útil).
        */
       async firstUpdated() {
         // Consulta de nodos dentro del Shadow Root (renderRoot) para ubicar
-        // el contenedor que Google Maps usará como "lienzo".
+        // el contenedor que Leaflet usará como "lienzo".
         this.contenedorMapa = this.renderRoot.querySelector("#mapa");
 
+        // Hoja de estilos de Leaflet DENTRO del Shadow DOM (nodo creado con
+        // createElement + appendChild: Lit no gestiona este nodo).
+        const estilos = document.createElement("link");
+        estilos.rel = "stylesheet";
+        estilos.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+        this.renderRoot.appendChild(estilos);
+
         try {
-          await this.esperarApiGoogle(); // Promesa: espera al script asíncrono
-
-          // importLibrary(): carga perezosamente las bibliotecas necesarias.
-          const { Map: MapaGoogle, Circle: CirculoGoogle } = await google.maps.importLibrary("maps");
-          const { AdvancedMarkerElement: MarcadorAvanzado } = await google.maps.importLibrary("marker");
-
-          this.MapaGoogle = MapaGoogle;
-          this.CirculoGoogle = CirculoGoogle;
-          this.MarcadorAvanzado = MarcadorAvanzado;
-          this.apiLista = true;
+          await this.esperarLeaflet(); // Promesa: espera al script con defer
+          this.libreriaLista = true;
           this.crearMapa(); // pinta si ya llegaron las coordenadas
         } catch (error) {
-          this.errorApi = true;
-          this.mensaje = `No se pudo cargar Google Maps: ${error.message}`;
+          this.errorLibreria = true;
+          this.mensaje = `No se pudo cargar OpenStreetMap: ${error.message}`;
         }
       }
 
@@ -535,42 +534,44 @@
        * Aquí reaccionamos a los cambios de propiedades sin reconstruir el mapa.
        */
       updated(propiedadesAnteriores) {
-        // Aún no hay mapa: intentamos crearlo (si hay API y coordenadas).
+        // Aún no hay mapa: intentamos crearlo (si hay librería y coordenadas).
         if (!this.mapa) {
           this.crearMapa();
-          if (!this.mapa && !this.errorApi && this.latitud !== null) {
+          if (!this.mapa && !this.errorLibreria && this.latitud !== null) {
             this.mensaje = "Preparando el mapa…";
           }
         }
 
         if (!this.mapa) return;
 
-        // Coordenadas nuevas → reubicamos marcador y círculo (sin recrear).
+        // Coordenadas nuevas → reubicamos vista, marcador y círculo (sin recrear).
         if (propiedadesAnteriores.has("latitud") || propiedadesAnteriores.has("longitud")) {
-          const posicion = { lat: this.latitud, lng: this.longitud };
-          this.mapa.setCenter(posicion);
-          this.marcador.position = posicion;
-          this.circulo.setCenter(posicion); // centro idéntico al del marcador
+          const posicion = [this.latitud, this.longitud]; // Leaflet usa [lat, lng]
+          this.mapa.setView(posicion, this.mapa.getZoom());
+          this.marcador.setLatLng(posicion);
+          this.circulo.setLatLng(posicion); // centro idéntico al del marcador
         }
 
         // Paleta nueva → solo cambian los colores del círculo y del marcador.
         if (propiedadesAnteriores.has("paleta")) this.actualizarColores();
       }
 
-      // disconnectedCallback: liberamos referencias cuando el componente se retira.
+      // disconnectedCallback: liberamos el mapa y sus recursos al retirarse.
       disconnectedCallback() {
-        if (this.marcador) this.marcador.map = null; // desvincula el marcador
+        if (this.mapa) this.mapa.remove(); // Leaflet limpia tiles, eventos y nodos
         this.mapa = null;
+        this.marcador = null;
+        this.circulo = null;
         super.disconnectedCallback();
       }
 
-      // Promesa que resuelve cuando el script asíncrono expone importLibrary().
-      esperarApiGoogle() {
+      // Promesa que resuelve cuando el script de Leaflet expone el global L.
+      esperarLeaflet() {
         return new Promise((resolver, rechazar) => {
           let intentos = 0;
           const comprobar = () => {
-            if (window.google?.maps?.importLibrary) return resolver(); // optional chaining
-            if (intentos++ >= 40) return rechazar(new Error("el script no cargó (revisa la API key o la conexión)"));
+            if (window.L?.map) return resolver(); // optional chaining
+            if (intentos++ >= 40) return rechazar(new Error("la librería no cargó (revisa la conexión)"));
             setTimeout(comprobar, 250); // reintento cada 250 ms (máx. 10 s)
           };
           comprobar();
@@ -579,44 +580,45 @@
 
       // Crea mapa + marcador + círculo UNA sola vez (guardia anti-recreación).
       crearMapa() {
-        const listo = this.apiLista && this.latitud !== null && this.longitud !== null;
+        const listo = this.libreriaLista && this.latitud !== null && this.longitud !== null;
         if (this.mapa || !listo) return;
 
-        const posicion = { lat: this.latitud, lng: this.longitud };
+        const posicion = [this.latitud, this.longitud];
 
-        this.mapa = new this.MapaGoogle(this.contenedorMapa, {
+        // L.map: instancia de Leaflet sobre el contenedor del Shadow DOM.
+        this.mapa = L.map(this.contenedorMapa, {
           center: posicion,
-          zoom: 15,               // nivel apropiado para ver ~500 m alrededor
-          mapId: DEMO_MAP_ID,     // obligatorio para AdvancedMarkerElement
-          disableDefaultUI: true,
-          clickableIcons: false
+          zoom: 15,           // nivel apropiado para ver ~500 m alrededor
+          scrollWheelZoom: false // el scroll de la página no roba el zoom
         });
 
-        // Marcador AVANZADO (clase nueva; se evita el antiguo google.maps.Marker).
-        // content: nodo real creado con createElement (Google Maps lo inserta
-        // en el mapa y le aplica los estilos en línea que le demos).
+        // Capa de teselas de OpenStreetMap con atribución obligatoria.
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>"
+        }).addTo(this.mapa);
+
+        // Marcador personalizado: divIcon con un nodo creado con createElement
+        // (Leaflet lo inserta en el mapa; los estilos en línea son suyos).
         this.pinn = document.createElement("div");
         this.pinn.setAttribute("aria-hidden", "true");
         this.pinn.style.cssText =
           "width:24px;height:24px;border:3px solid #ffffff;border-radius:50%;" +
           "box-shadow:0 3px 8px rgba(15,45,74,.45);";
 
-        this.marcador = new this.MarcadorAvanzado({
-          map: this.mapa,
-          position: posicion,
-          content: this.pinn,
-          title: "Tu ubicación"
-        });
+        this.marcador = L.marker(posicion, {
+          icon: L.divIcon({ className: "", html: this.pinn, iconSize: [24, 24], iconAnchor: [12, 12] }),
+          title: "Tu ubicación",
+          alt: "Tu ubicación"
+        }).addTo(this.mapa);
 
         // Círculo geográfico de 500 m centrado en las coordenadas del usuario.
-        this.circulo = new this.CirculoGoogle({
-          map: this.mapa,
-          center: posicion,
+        this.circulo = L.circle(posicion, {
           radius: 500,
-          strokeWeight: 2,
+          weight: 2,
           fillOpacity: 0.16,   // relleno ligero
-          strokeOpacity: 0.65  // borde ligero
-        });
+          opacity: 0.65        // borde ligero
+        }).addTo(this.mapa);
 
         this.actualizarColores(); // aplica la paleta activa actual
         this.mensaje = "";        // ya hay mapa: se oculta el aviso
@@ -627,8 +629,8 @@
         if (!this.circulo || this.paleta.length < 4) return;
         const [relleno, borde, pin, detalle] = this.paleta; // destructuring
 
-        // setOptions(): actualiza propiedades del círculo in situ.
-        this.circulo.setOptions({ fillColor: relleno, strokeColor: borde });
+        // setStyle(): actualiza el círculo in situ (mismo objeto, mismos tiles).
+        this.circulo.setStyle({ fillColor: relleno, color: borde });
         // Detalles visuales del marcador con otros colores de la misma paleta.
         if (this.pinn) {
           this.pinn.style.backgroundColor = pin;
@@ -642,7 +644,7 @@
         const aviso = this.mensaje || (hayCoordenadas ? "" : this.aviso);
         return html`
           <article class="tarjeta">
-            <p class="marca">Mapa · Google Maps</p>
+            <p class="marca">Mapa · OpenStreetMap</p>
             <h2>Tu ubicación</h2>
 
             <!-- Contenedor del mapa: existe desde el primer render -->
