@@ -9,6 +9,7 @@ Aplicación web minimalista construida con **Web Components** y **Lit**, con dis
 * **Reloj local**: Hora actual y zona horaria del usuario.
 * **Mapa interactivo**: Integración con Leaflet y OpenStreetMap para mostrar la ubicación y un radio de 500m adaptado a la paleta activa.
 * **Dashboard principal**: Coordina el estado global de la aplicación.
+* **Componente BBVA**: `<bbva-web-component>` (adaptado del ejemplo de BBVA) que recibe la paleta activa por propiedades y se recolorea con sus 4 colores.
 
 ## Tecnologías
 

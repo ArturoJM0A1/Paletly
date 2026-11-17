@@ -15,21 +15,23 @@ características de Web Components y LitElement se emplean en ella.
                 barra de scroll de 3 px, logotipo con clip-path).
                 Enlaza app.js y da enlace a las pruebas.
 
-  app.js      → Módulo ESM con los 5 componentes (único código fuente).
+  app.js      → Módulo ESM con los 6 componentes (único código fuente).
                 Importado por index.html (la app) y por pruebas.html
                 (las pruebas), así el código se escribe UNA sola vez.
 
-  pruebas.html→ 16 pruebas unitarias nativas (sin Jest/Mocha/Vitest) que
+  pruebas.html→ 17 pruebas unitarias nativas (sin Jest/Mocha/Vitest) que
                 importan ./app.js y prueban exactamente el mismo código
                 que corre la aplicación.
 
-Los 5 componentes:
+Los 6 componentes:
 
   <app-dashboard>       Panel principal: estado general y coordinación
   <palette-generator>   Generador de 4 colores aleatorios
   <palette-history>     Historial de paletas generadas
   <user-clock>          Reloj en vivo con zona horaria
   <user-location-map>   Mapa OpenStreetMap (Leaflet) con la ubicación
+  <bbva-web-component>  Ejemplo BBVA adaptado: logo + mensaje que cambia
+                        de color según la paleta activa
 
 Dependencias (todas desde CDN, sin build ni package.json):
 
@@ -45,7 +47,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
 
   [1] Carga de la página
       index.html carga Leaflet (defer) y app.js (módulo ESM).
-      app.js ejecuta customElements.define() para registrar los 5
+      app.js ejecuta customElements.define() para registrar los 6
       componentes; el navegador convierte cada etiqueta en un objeto.
 
   [2] Arranque del <app-dashboard> (el componente "madre")
@@ -54,7 +56,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
       · firstUpdated() → publica la paleta inicial como variables CSS
         (--paleta-1..4) para que el logotipo nazca coloreado.
       · Pide la ubicación (geolocalización) y la zona horaria.
-      · Renderiza dentro de su Shadow DOM los 4 componentes hijos,
+      · Renderiza dentro de su Shadow DOM los 5 componentes hijos,
         pasándoles datos por PROPIEDADES (paleta, historial, aviso...).
 
   [3] Generar una paleta
@@ -69,6 +71,9 @@ Dependencias (todas desde CDN, sin build ni package.json):
         solo en lo necesario → se actualizan hijos, historial y estado.
       · updated() publica la nueva paleta como variables CSS → el
         logotipo del encabezado cambia de color con una transición.
+      · <bbva-web-component> también se recolorea: recibe los 4
+        colores por PROPIEDAD (.paleta) y pinta su logo BBVA con un
+        degradado nuevo en cada paleta generada.
 
   [4] Reloj
       <user-clock> inicia un setInterval cada segundo, formatea la hora
@@ -217,10 +222,11 @@ Dependencias (todas desde CDN, sin build ni package.json):
   · Cubren: registro, generador (formato y nº de colores), evento
     paleta-cambio (bubbles/composed hasta document), historial,
     reloj (formato y clearInterval), geolocalización (los 3 errores
-    + éxito + reintento + precisión) y mapa (guards sin librería,
-    aviso con ?oculto).
+    + éxito + reintento + precisión), mapa (guards sin librería,
+    aviso con ?oculto) y <bbva-web-component> (los 4 colores de la
+    paleta pintados en el logo BBVA).
 
-  Resultado: 16 correctas · 0 fallidas · ¡todo en verde!
+  Resultado: 17 correctas · 0 fallidas · ¡todo en verde!
 
   Cómo ejecutarlas:
       npx serve -l 4173 .
@@ -235,7 +241,8 @@ Dependencias (todas desde CDN, sin build ni package.json):
                  (palette-generator → app-dashboard: "paleta-cambio")
 
   PADRE → HIJO   por PROPIEDADES reactivas
-                 (app-dashboard → palette-history: historial, paleta)
+                 (app-dashboard → palette-history: historial, paleta
+                  app-dashboard → bbva-web-component: paleta)
 
   HIJO → FUERA   por variables CSS heredadas
                  (app-dashboard → logotipo del documento: --paleta-N)

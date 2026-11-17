@@ -9,6 +9,7 @@
   <!-- Estilos mínimos de la página de pruebas (los componentes siguen
        encapsulados en su propio Shadow DOM). -->
   <style>
+    /* Variables globales: tema claro, tipografía y fondo degradado */
     :root {
       color-scheme: light;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -16,14 +17,19 @@
       background: linear-gradient(160deg, #f4faff 0%, #e9f4ff 55%, #f8fcff 100%);
     }
 
+    /* Padding y borde incluidos en el ancho declarado (evita desbordes) */
     * { box-sizing: border-box; }
 
+    /* Cuerpo: sin scroll horizontal raro y con margen interior */
     body { min-width: 320px; min-height: 100vh; margin: 0; padding: 40px 18px; }
 
+    /* Columna central de lectura, centrada con ancho máximo 780 px */
     main { width: min(100%, 780px); margin: 0 auto; }
 
+    /* Título de la página de pruebas */
     h1 { margin: 0 0 6px; font-size: clamp(1.7rem, 5vw, 2.3rem); letter-spacing: -0.04em; }
 
+    /* Párrafo introductorio con enlaces */
     .intro { margin: 0 0 20px; color: #40617f; line-height: 1.7; }
     .intro a { color: #2b6cb0; font-weight: 650; }
 
@@ -95,9 +101,12 @@
     // =========================================================
     // MINI MOTOR DE PRUEBAS NATIVO (sin dependencias)
     // =========================================================
-    const area = document.getElementById("area");
-    const listaResultados = document.getElementById("resultados");
-    const resumen = document.getElementById("resumen");
+    // Nodos de la página de pruebas (DOM nativo: getElementById)
+    const area = document.getElementById("area");               // contenedor OCULTO donde se montan los componentes
+    const listaResultados = document.getElementById("resultados"); // <ul> con el detalle ✔ / ✘ de cada prueba
+    const resumen = document.getElementById("resumen");         // contador global con aria-live
+
+    // Contadores del informe: se incrementan dentro de probar()
     let correctas = 0;
     let fallidas = 0;
 
@@ -123,6 +132,8 @@
       pintarResumen();
     }
 
+    // Redibuja el resumen global: clase "ok" → verde (sin fallos),
+    // clase "ko" → rojo (alguna prueba ha fallado)
     function pintarResumen() {
       resumen.textContent = `${correctas} correctas · ${fallidas} fallidas de las ${correctas + fallidas} pruebas`;
       resumen.classList.toggle("ok", fallidas === 0 && correctas > 0);
@@ -138,6 +149,17 @@
       if (real !== esperado) {
         throw new Error(`${mensaje} → esperado "${esperado}", obtenido "${real}"`);
       }
+    }
+
+    /**
+     * Convierte #RRGGBB a "rgb(r, g, b)".
+     * El navegador puede serializar los colores del atributo style en
+     * formato rgb() en lugar de hex, así que las comparaciones se hacen
+     * con AMBAS formas para que la prueba sea robusta.
+     */
+    function aRgb(hex) {
+      const numero = parseInt(hex.slice(1), 16); // #111111 → 1118481
+      return `rgb(${(numero >> 16) & 255}, ${(numero >> 8) & 255}, ${numero & 255})`;
     }
 
     // ---------- Ayudantes de ciclo de vida ----------
@@ -186,11 +208,37 @@
     // =========================================================
     async function ejecutarPruebas() {
       // ---------- Registro y generador de paletas ----------
-      await probar("Los cinco componentes están registrados con customElements.define()", () => {
-        ["app-dashboard", "palette-generator", "palette-history", "user-clock", "user-location-map"]
+      await probar("Los seis componentes están registrados con customElements.define()", () => {
+        ["app-dashboard", "palette-generator", "palette-history", "user-clock", "user-location-map", "bbva-web-component"]
           .forEach((etiqueta) =>
             afirmar(!!customElements.get(etiqueta), `falta el registro de <${etiqueta}>`)
           );
+      });
+
+      await probar("<bbva-web-component> pinta el logo BBVA con los 4 colores de la paleta que recibe", async () => {
+        const bbva = await montar("bbva-web-component"); // instancia + updateComplete
+
+        // El logo debe estar pintado dentro de su Shadow DOM
+        const span = bbva.shadowRoot.querySelector("h1 span");
+        afirmar(span, "no se pintó el <span> del logo BBVA");
+        afirmar(span.textContent.includes("BBVA"), "el texto del logo debe ser BBVA");
+
+        // Property Binding simulado: así le pasaría la paleta el dashboard
+        const colores = ["#111111", "#222222", "#333333", "#444444"];
+        bbva.paleta = colores; // propiedad reactiva → nuevo render()
+        await esperarActualizacion(bbva);
+
+        // El style del span debe contener los 4 colores. Se comprueba el
+        // valor BRUTO del atributo y también su forma rgb(), porque el
+        // navegador puede serializar #111111 como rgb(17, 17, 17).
+        const estilo = bbva.shadowRoot.querySelector("h1 span").getAttribute("style") ?? "";
+        colores.forEach((color) =>
+          afirmar(
+            estilo.includes(color) || estilo.includes(aRgb(color)),
+            `el color ${color} no aparece en el estilo del logo (style="${estilo}")`
+          )
+        );
+        desmontar(bbva); // disconnectedCallback
       });
 
       await probar("colorAleatorio() devuelve colores hexadecimales #RRGGBB en mayúsculas", () => {
@@ -204,6 +252,7 @@
       });
 
       await probar("generarPaleta() produce exactamente 4 colores válidos", () => {
+        // Se puede invocar SIN montar el componente: no depende del DOM
         const generador = document.createElement("palette-generator");
         generador.generarPaleta(); // se puede invocar sin estar conectado
         afirmarIgual(generador.paleta.length, 4, "cantidad de colores");
@@ -291,6 +340,8 @@
 
       // ---------- Reloj ----------
       await probar("<user-clock> muestra la hora en formato 24 h con su zona horaria", async () => {
+        // Se monta el reloj y se comprueba el estado reactivo (hora, zona)
+        // y que Lit haya pintado la hora dentro de su Shadow DOM.
         const reloj = await montar("user-clock");
         afirmar(/^\d{2}:\d{2}:\d{2}$/.test(reloj.hora), `formato de hora inválido: ${reloj.hora}`);
         afirmarIgual(reloj.zonaHoraria, Intl.DateTimeFormat().resolvedOptions().timeZone, "zona horaria");
@@ -312,6 +363,7 @@
 
       // ---------- Geolocalización ----------
       await probar("Con permiso denegado se muestra el error y no se inventan coordenadas", async () => {
+        // El doble simula el código 1 del navegador (permiso denegado)
         geolocalizacionSimulada = {
           getCurrentPosition: (correcto, error) => error({ code: 1, message: "Denegado" })
         };
@@ -344,6 +396,8 @@
       });
 
       await probar("Con permiso concedido se guardan latitud y longitud reales", async () => {
+        // El doble responde con éxito (Ciudad de México), como haría
+        // el navegador real después de conceder el permiso.
         geolocalizacionSimulada = {
           getCurrentPosition: (correcto) =>
             correcto({ coords: { latitude: 19.4326, longitude: -99.1332 } })
