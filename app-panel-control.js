@@ -9,6 +9,17 @@
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 
 // =========================================================
+// ALMACÉN COMPARTIDO (estado-compartido.js)
+// ---------------------------------------------------------
+// El panel LEE el estado global: así, si se generó una paleta
+// en la ruta aislada /generador-paletas (u otra vista), al volver
+// a '/' el panel la muestra y el historial ya la incluye.
+// El panel NO escribe en el almacén: lo hace main.js con el
+// evento 'paleta-cambio', y así no se duplican entradas.
+// =========================================================
+import { suscribir } from "./estado-compartido.js";
+
+// =========================================================
 // 6) <app-panel-control>
 //    Responsabilidad: estado general y coordinación.
 //    Escucha los eventos de sus hijos y les pasa datos por propiedades.
@@ -139,6 +150,13 @@ class PanelPrincipal extends LitElement {
   // los hijos (que se montan en el primer render, posterior a este método).
   connectedCallback() {
     super.connectedCallback();
+    // Suscripción al almacén compartido: sincroniza el panel con el
+    // estado global (paletas generadas en otras rutas, ubicación
+    // pedida por la ruta del mapa…). suscribir() llama YA MISMO al
+    // oyente con el estado actual → sincronía inicial.
+    this.bajaAlmacen = suscribir((compartido) =>
+      this.sincronizarDesdeAlmacen(compartido)
+    );
     this.addEventListener("paleta-cambio", this.manejarPaleta);
     this.addEventListener("zona-horaria", this.manejarZona);
     this.pedirUbicacion();
@@ -146,10 +164,32 @@ class PanelPrincipal extends LitElement {
 
   // disconnectedCallback: se retiran los oyentes para no dejar basura.
   disconnectedCallback() {
+    if (this.bajaAlmacen) {
+      this.bajaAlmacen(); // baja de la suscripción al almacén
+      this.bajaAlmacen = null;
+    }
     this.removeEventListener("paleta-cambio", this.manejarPaleta);
     this.removeEventListener("zona-horaria", this.manejarZona);
     super.disconnectedCallback();
   }
+
+  /**
+   * sincronizarDesdeAlmacen(): copia el estado global a las
+   * propiedades reactivas del panel (mismos nombres de campo →
+   * asignación directa). Es SOLO lectura: el almacén se escribe
+   * desde main.js (evento 'paleta-cambio' / 'zona-horaria') y
+   * desde solicitarUbicacion() (ruta del mapa).
+   */
+  sincronizarDesdeAlmacen = (compartido) => {
+    this.paleta = compartido.paleta;
+    this.historial = compartido.historial;
+    this.latitud = compartido.latitud;
+    this.longitud = compartido.longitud;
+    this.precision = compartido.precision;
+    this.estado = compartido.estado;
+    this.mensajeEstado = compartido.mensajeEstado;
+    this.zonaHoraria = compartido.zonaHoraria;
+  };
 
   // firstUpdated(): se ejecuta UNA sola vez, después del primer render.
   // Publica ya la paleta inicial para que el logotipo nazca coloreado.
@@ -218,6 +258,7 @@ class PanelPrincipal extends LitElement {
     if (!navigator.geolocation) {
       this.estado = "error";
       this.mensajeEstado = "Este navegador no admite la geolocalización.";
+      this.publicarUbicacion();
       return;
     }
 
@@ -236,6 +277,7 @@ class PanelPrincipal extends LitElement {
         this.precision !== null && this.precision > 5000
           ? "Ubicación aproximada: el navegador la estima por IP (VPN, proxy o red corporativa)."
           : "Ubicación detectada correctamente.";
+      this.publicarUbicacion();
     } catch (error) {
       // Códigos estándar: 1 permiso denegado, 2 no disponible, 3 tiempo agotado.
       this.estado = "error";
@@ -248,8 +290,37 @@ class PanelPrincipal extends LitElement {
             : error.code === 3
               ? "Se agotó el tiempo esperando la ubicación; inténtalo de nuevo."
               : "No se pudo obtener la ubicación.";
+      this.publicarUbicacion();
     }
   }
+
+  /**
+   * publicarUbicacion(): avisa al resto de la app del resultado de
+   * la geolocalización. El evento BURBUJEA hasta el documento, donde
+   * main.js lo vuelca al almacén compartido (mismo patrón que
+   * 'paleta-cambio'): así el <mapa-ubicacion-usuario> de la ruta
+   * aislada se actualiza con EXACTAMENTE lo que decide el panel
+   * (coordenadas, precisión, estado y mensaje), y también al revés:
+   * lo que pida solicitarUbicacion() en la ruta del mapa llega aquí
+   * por la suscripción al almacén.
+   * Solo se publican RESULTADOS (no el "cargando" inicial), para no
+   * pisar un estado ya resuelto con un "Solicitando permiso…".
+   */
+  publicarUbicacion = () => {
+    this.dispatchEvent(
+      new CustomEvent("ubicacion-actualizada", {
+        detail: {
+          latitud: this.latitud,
+          longitud: this.longitud,
+          precision: this.precision,
+          estado: this.estado,
+          mensajeEstado: this.mensajeEstado
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
+  };
 
   /**
    * Vuelve a solicitar la ubicación. El navegador solo muestra el diálogo

@@ -6,11 +6,22 @@
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 
 // =========================================================
+// ALMACÉN COMPARTIDO (estado-compartido.js)
+// ---------------------------------------------------------
+// Este componente funciona de DOS formas:
+//   a) DENTRO de <app-panel-control>: el panel le pasa el
+//      historial con Property Binding (.historial=${...}).
+//   b) AISLADO en la ruta /historial-paletas: nadie le pasa
+//      nada, así que LEE el almacén compartido y se suscribe a
+//      sus cambios (las paletas generadas en /generador-paletas
+//      aparecen aquí aunque ese componente no esté en pantalla).
+// =========================================================
+import { suscribir } from "./estado-compartido.js";
+
+// =========================================================
 // 2) <historial-paletas>
 //    Responsabilidad: mostrar el registro de todas las paletas
-//    generadas (4 valores por cada cambio). No guarda estado propio:
-//    recibe el historial desde <app-panel-control> mediante una propiedad
-//    reactiva, siguiendo el patrón de datos "hacia abajo" del proyecto.
+//    generadas (4 valores por cada cambio).
 // =========================================================
 class HistorialPaletas extends LitElement {
   // Propiedad reactiva: lista de paletas, cada una con sus 4 colores.
@@ -121,6 +132,25 @@ class HistorialPaletas extends LitElement {
   constructor() {
     super();
     this.historial = []; // estado inicial: sin paletas registradas
+  }
+
+  // connectedCallback: en la vista aislada nadie inyecta propiedades,
+  // así que aquí se lee el almacén compartido (y se avisa de sus
+  // cambios mientras el componente esté conectado).
+  connectedCallback() {
+    super.connectedCallback();
+    this.bajaAlmacen = suscribir((compartido) => {
+      this.historial = compartido.historial;
+    });
+  }
+
+  // disconnectedCallback: se da de baja para no dejar oyentes huérfanos.
+  disconnectedCallback() {
+    if (this.bajaAlmacen) {
+      this.bajaAlmacen();
+      this.bajaAlmacen = null;
+    }
+    super.disconnectedCallback();
   }
 
   render() {

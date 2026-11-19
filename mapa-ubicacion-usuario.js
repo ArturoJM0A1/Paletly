@@ -14,6 +14,17 @@ import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 import { interval } from "https://cdn.jsdelivr.net/npm/rxjs@7.8.1/+esm";
 
 // =========================================================
+// ALMACÉN COMPARTIDO (estado-compartido.js)
+// ---------------------------------------------------------
+// En la ruta aislada /mapa-ubicacion-usuario nadie le inyecta
+// .latitud/.longitud/.paleta con property binding (eso lo hace
+// <app-panel-control>). Aquí las LEE del almacén: la ubicación
+// la pide la acción de la ruta (solicitarUbicacion) y la paleta
+// la comparte toda la app.
+// =========================================================
+import { suscribir } from "./estado-compartido.js";
+
+// =========================================================
 // 4) <mapa-ubicacion-usuario>
 //    Responsabilidad: pintar las coordenadas sobre OpenStreetMap
 //    (Leaflet) con un marcador y una forma de 500 m coloreada con
@@ -128,6 +139,20 @@ class UbicacionMapa extends LitElement {
     this.errorLibreria = false;
   }
 
+  // connectedCallback: suscripción al almacén compartido. En la
+  // vista aislada es la ÚNICA fuente de coordenadas, paleta y
+  // aviso de permiso; dentro del panel el padre además las pasa
+  // por binding con los MISMOS valores (no compiten).
+  connectedCallback() {
+    super.connectedCallback();
+    this.bajaAlmacen = suscribir((compartido) => {
+      this.latitud = compartido.latitud;
+      this.longitud = compartido.longitud;
+      this.paleta = compartido.paleta;
+      this.aviso = compartido.mensajeEstado;
+    });
+  }
+
   /**
    * firstUpdated(): se ejecuta UNA sola vez, después del primer render,
    * momento en el que el contenedor interno ya existe en el Shadow DOM.
@@ -184,8 +209,13 @@ class UbicacionMapa extends LitElement {
     if (propiedadesAnteriores.has("paleta")) this.actualizarColores();
   }
 
-  // disconnectedCallback: liberamos el mapa y sus recursos al retirarse.
+  // disconnectedCallback: se da de baja del almacén compartido y
+  // liberamos el mapa y sus recursos al retirarse.
   disconnectedCallback() {
+    if (this.bajaAlmacen) {
+      this.bajaAlmacen();
+      this.bajaAlmacen = null;
+    }
     // RxJS: cancelar la suscripción detiene el intervalo de 7 s.
     // Sin esto, el Observable seguiría emitiendo sobre un mapa
     // ya destruido (fuga de memoria / errores en consola).

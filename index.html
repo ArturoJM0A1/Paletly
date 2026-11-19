@@ -9,6 +9,36 @@
 
   <!--
     =========================================================
+    IMPORT MAP · OPEN CELLS (framework de rutas de BBVA)
+    =========================================================
+    Esta aplicación no usa build: todo es ESM puro. El import map
+    permite importar los paquetes de Open Cells con el MISMO
+    especificador que usa la documentación:
+
+        import { startApp } from '@open-cells/core';
+        import { PageController } from '@open-cells/page-controller';
+
+    Se fijan versiones EXACTAS para que el navegador cargue una
+    única instancia del core: el estado del router vive en ese
+    módulo, y si hubiera dos copias, navigate() del componente no
+    llegaría al router que arrancó la app.
+
+    Debe declararse ANTES de cualquier <script type="module">.
+    =========================================================
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@open-cells/core": "https://esm.sh/@open-cells/core@1.2.1",
+        "@open-cells/core-plugin": "https://esm.sh/@open-cells/core-plugin@1.2.4",
+        "@open-cells/element-controller": "https://esm.sh/@open-cells/element-controller@1.0.6",
+        "@open-cells/page-controller": "https://esm.sh/@open-cells/page-controller@1.0.6"
+      }
+    }
+  </script>
+
+  <!--
+    =========================================================
     LEAFLET + OPENSTREETMAP (sin clave de API)
     =========================================================
     Leaflet dibuja los mapas de OpenStreetMap: basta con este script
@@ -62,24 +92,87 @@
     }
 
     /* Contenedor principal: rejilla vertical que CENTRA todos los
-       bloques (justify-items: center) y los separa con 26 px */
+       bloques (justify-items: center) y los separa con 26 px.
+       padding-top amplio: la cabecera es `position: fixed` y flota
+       encima; el menú debe empezar por debajo de ella.
+       padding-left: deja hueco al RAIL del menú vertical, que
+       vive fijo al borde izquierdo (ver app-menu). */
     .pagina {
       display: grid;
       gap: 26px;
       justify-items: center;
-      padding: 48px 18px 40px;
+      padding: 104px 18px 40px 88px;
     }
 
-    /* Cabecera: ancho máximo y texto centrado */
+    /* =========================================================
+       CONTENEDOR DE RUTAS (mainNode de Open Cells)
+       ---------------------------------------------------------
+       El router monta aquí la página activa. Es una rejilla igual
+       que .pagina para que los hijos (el panel completo o un
+       componente aislado) sigan centrados y con su ancho propio.
+       ========================================================= */
+    #app-content {
+      display: grid;
+      gap: 26px;
+      justify-items: center;
+      /* Mismo ancho que la rejilla interna del panel
+         (width: min(100%, 1090px)): así la regla de abajo puede
+         calcular el ancho EXACTO de una columna del panel. */
+      width: min(100%, 1090px);
+    }
+
+    /* =========================================================
+       VISTAS AISLADAS · EL MISMO ANCHO QUE EN EL PANEL
+       ---------------------------------------------------------
+       Sin esto, la rejilla de #app-content (justify-items:center)
+       encoge cada vista aislada a "lo que pida su contenido" y la
+       tarjeta sale más ancha y con los iconos acomodados distinto
+       que dentro del panel. Aquí se replica el cálculo de la
+       rejilla del panel:
+
+         columnas: repeat(3, minmax(320px, 1fr))
+         ancho de columna = max(320px, (contenedor - 20px) / 3)
+
+       El panel y el mapa son casos especiales: ocupan las 3
+       columnas (lo mismo que .ancho-completo dentro del panel).
+       ========================================================= */
+    #app-content > :not(app-panel-control):not(mapa-ubicacion-usuario) {
+      width: max(320px, calc((100% - 20px) / 3));
+    }
+
+    #app-content > app-panel-control,
+    #app-content > mapa-ubicacion-usuario {
+      width: 100%;
+    }
+
+    /* =========================================================
+       VISTAS AISLADAS · OCULTAR LAS RUTAS INACTIVAS
+       ---------------------------------------------------------
+       El router de Open Cells NO destruye las páginas visitadas:
+       las mantiene en el DOM (caché, viewLimit 20) y les marca un
+       atributo de estado:
+         state="active"    → página de la ruta actual
+         state="inactive"  → página que acabas de abandonar
+         state="cached"    → página visitada hace tiempo
+       Sin esta regla, todas las vistas se verían a la vez.
+       ========================================================= */
+    #app-content > [state]:not([state='active']) {
+      display: none;
+    }
+
+    /* Cabecera: ancho máximo y texto centrado.
+       left/right fijados para que quede centrada sobre el CONTENIDO
+       (que empieza a los 88px, después del rail del menú). */
     .encabezado {
       max-width: 760px;
       text-align: center;
       position: fixed;
       z-index: 3;
-      left: 0;
+      left: 88px;
+      right: 18px;
       top: 0;
       display: flex;
-      margin-left: 3px;
+      margin: 0 auto;
       padding: 7px;
       border-radius: 16px;
       background-color: rgba(255, 255, 255, 0.55);
@@ -218,7 +311,12 @@
     @media (max-width: 560px) {
       .pagina {
         gap: 20px;
-        padding: 32px 14px;
+        padding: 88px 14px 32px 76px;
+      }
+
+      .encabezado {
+        left: 76px;
+        right: 14px;
       }
 
       .encabezado__descripcion {
@@ -238,8 +336,16 @@
       </div>
     </header>
 
-    <!-- Componente principal: administra el estado compartido. -->
-    <app-panel-control></app-panel-control>
+    <!-- Menú de navegación SPA: se ve en todas las rutas y vive
+         FUERA de #app-content, así que el router no lo toca. -->
+    <app-menu></app-menu>
+
+    <!-- Contenedor principal de Open Cells: es el `mainNode` que
+         recibe startApp(). El router monta aquí la página activa:
+           '/'                 → <app-panel-control> (panel completo)
+           '/generador-paletas'→ <generador-paletas>  (vista aislada)
+           ... etc. -->
+    <div id="app-content"></div>
 
     <footer class="pie">
       Hecho con cafeína 
@@ -248,11 +354,17 @@
   </main>
 
   <!--
-    El código de los seis componentes vive en SEIS archivos .js (uno por
-    componente) que importa app.js (módulo ESM, sin build), para poder
-    reutilizarlo desde la página de pruebas con una sola importación.
+    Punto de entrada con router: main.js llama a startApp() de
+    Open Cells con el arreglo de rutas (routes.js) y el contenedor
+    #app-content. Cada componente sigue viviendo en su propio
+    archivo .js: lo carga el `action()` de su ruta (import dinámico),
+    excepto el menú, que es fijo y se importa de forma estática.
+
+    Ojo: los módulos ESM se diferían, así que este script se
+    ejecuta con el DOM ya construido (el router necesita que
+    #app-content exista).
   -->
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./main.js"></script>
 </body>
 
 </html>

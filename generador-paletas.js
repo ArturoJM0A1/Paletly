@@ -133,12 +133,14 @@ class GeneradorPaleta extends LitElement {
     this.paleta = [...Array(4)].map(() => this.colorAleatorio());
 
     // EVENTO PERSONALIZADO que atraviesa el Shadow DOM:
-    //   bubbles: true   → asciende por el árbol hasta <app-panel-control>
+    //   bubbles: true   → asciende por el árbol hasta el documento
+    //                     (el panel lo recibe en el camino y
+    //                     main.js lo vuelca al almacén compartido)
     //   composed: true  → cruza la frontera del Shadow DOM
     this.dispatchEvent(
       new CustomEvent("paleta-cambio", {
         detail: { colores: [...this.paleta] }, // los cuatro colores en detail
-        bubbles: false,
+        bubbles: true,
         composed: true
       })
     );
