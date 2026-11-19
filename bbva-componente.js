@@ -137,8 +137,8 @@ class BbvaWebComponent extends LitElement {
     }
 
  .arturoicon {
-    width: 155px;
-    height: 155px;
+    width: 162px;
+    height: 162px;
     display: inline-block;
     margin-left: 4px; 
     }

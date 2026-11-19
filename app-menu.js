@@ -86,6 +86,7 @@ class AppMenu extends LitElement {
       width: 72px;
       height: 100vh;  /* altura completa de la ventana… */
       height: 100dvh; /* …sin la barra del navegador en móvil */
+      margin-top: -82px
     }
 
     nav {
