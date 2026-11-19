@@ -60,7 +60,7 @@ class GeneradorPaleta extends LitElement {
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      height: 88px;
+      height: 58px;
       border-radius: 16px;
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 8px 18px rgba(59, 110, 166, 0.14);
     }
@@ -70,7 +70,7 @@ class GeneradorPaleta extends LitElement {
       margin-bottom: 8px;
       padding: 4px 9px;
       border-radius: 9px;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.82);
       color: #0f2d4a;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 0.76rem;
@@ -79,7 +79,7 @@ class GeneradorPaleta extends LitElement {
 
     /* Botón principal: margin-top:auto lo empuja al fondo de la tarjeta */
     button {
-      margin-top: auto;
+      margin-top: 19px;
       margin-bottom: 20px;
       padding: 12px 14px;
       border: 0;
@@ -111,11 +111,13 @@ class GeneradorPaleta extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     // Paleta automática inicial: solo la primera vez que se monta.
+    // SI ESTA VACIA GENERAR PALETA
     if (this.paleta.length === 0) this.generarPaleta();
   }
 
   // Función flecha (campo de clase): conserva el "this" de la instancia.
   // Math.random() → color hexadecimal aleatorio de 6 cifras.
+  //6 digitos, 0 si es que faltan
   colorAleatorio = () =>
     "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0").toUpperCase();
 
@@ -125,6 +127,8 @@ class GeneradorPaleta extends LitElement {
    * imprescindible para que la propiedad reactiva detecte el cambio.
    */
   generarPaleta = () => {
+    //SE CREARAN 4 hexa y se guardaran en el array paleta
+    //[... expadir es decir undefined, undefined, undefined, undefined] 
     this.paleta = [...Array(4)].map(() => this.colorAleatorio());
 
     // EVENTO PERSONALIZADO que atraviesa el Shadow DOM:
@@ -133,7 +137,7 @@ class GeneradorPaleta extends LitElement {
     this.dispatchEvent(
       new CustomEvent("paleta-cambio", {
         detail: { colores: [...this.paleta] }, // los cuatro colores en detail
-        bubbles: true,
+        bubbles: false,
         composed: true
       })
     );

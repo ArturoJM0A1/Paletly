@@ -1,7 +1,4 @@
 // Archivo: palette-history.js — componente <palette-history> de Paletly.
-// Extraído de app.js (ahora hay UN archivo por componente) para
-// facilitar su estudio: el código del componente es IDÉNTICO al
-// original; solo cambia que los imports viven ahora en este archivo.
 //
 // Lit 3 desde CDN (misma URL en los 6 archivos = un solo módulo
 // compartido): LitElement (clase base), html (plantillas) y
@@ -29,7 +26,7 @@ class HistorialPaletas extends LitElement {
       display: flex;
       flex-direction: column;
       height: 100%;
-      padding: 24px;
+      padding: 21px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;
       background: rgba(255, 255, 255, 0.55);
@@ -64,25 +61,26 @@ class HistorialPaletas extends LitElement {
       list-style: none;
     }
 
-    /* Barra de scroll del historial: 3 px, azul celeste translúcido.
+    /* Barra de scroll del historial: 1 px, azul celeste translúcido.
        Los estilos del documento NO llegan al Shadow DOM, así que aquí
        hay que declarar la barra otra vez para que sea consistente. */
-    .lista::-webkit-scrollbar { width: 3px; height: 3px; }
+    .lista::-webkit-scrollbar { width: 1px; height: 1px; }
     .lista::-webkit-scrollbar-track { background: rgba(125, 211, 252, 0.18); }
     .lista::-webkit-scrollbar-thumb {
-      background: rgba(56, 189, 248, 0.65);
+      background: rgba(53, 91, 230, 0.81);
       border-radius: 999px;
     }
-    .lista { scrollbar-width: thin; scrollbar-color: rgba(56, 189, 248, 0.65) rgba(125, 211, 252, 0.18); }
+    .lista { scrollbar-width: thin; scrollbar-color: rgba(56, 117, 248, 0.65) rgba(125, 211, 252, 0.18); }
 
     /* Cada paleta del historial: tarjeta pequeña dentro de la lista */
     .entrada {
       display: grid;
-      gap: 8px;
-      padding: 11px 13px;
+      gap: 7px;
+      padding: 11px 11px;
       border: 1px solid rgba(255, 255, 255, 0.9);
+      border-bottom: 2px solid rgba(187, 219, 255, 0.9);
       border-radius: 14px;
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(231, 247, 255, 0.5);
     }
 
     /* Número correlativo: "Paleta 1", "Paleta 2"... */
@@ -95,7 +93,7 @@ class HistorialPaletas extends LitElement {
     }
 
     /* Las 4 muestras de cada paleta guardada */
-    .entrada__colores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .entrada__colores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0px; }
 
     /* Miniatura de UN solo color de la paleta guardada */
     .celda {
@@ -111,6 +109,7 @@ class HistorialPaletas extends LitElement {
       font-size: 0.66rem;
       line-height: 1.5;
       word-break: break-all;
+      text-align: center;
     }
 
     /* Mensaje de estado vacío: aún no se ha generado ninguna paleta */
@@ -142,7 +141,7 @@ class HistorialPaletas extends LitElement {
                 ${this.historial.map(
                   (paleta, indice) => html`
                     <li class="entrada">
-                      <span class="entrada__indice">Paleta ${this.historial.length - indice}</span>
+                      <span class="entrada__indice">Paleta ${this.historial.length}</span>
 
                       <!-- Muestra visual de los 4 colores guardados -->
                       <div class="entrada__colores">

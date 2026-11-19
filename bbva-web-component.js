@@ -151,7 +151,7 @@ class BbvaWebComponent extends LitElement {
 
     return html`
       <article class="tarjeta">
-        <p class="marca">Componente · BBVA adaptado</p>
+        <p class="marca">Componente · BBVA</p>
 
         <!--
           Estilo en línea con interpolación (alternativa simple al
