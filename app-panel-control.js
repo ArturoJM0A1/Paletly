@@ -83,6 +83,7 @@ class PanelPrincipal extends LitElement {
       font-size: 0.7rem;
       font-weight: 760;
       letter-spacing: 0.14em;
+      
     }
 
     /* Punto de estado: Boolean Binding ?encendido → atributo presente/ausente */
