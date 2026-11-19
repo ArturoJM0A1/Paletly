@@ -12,7 +12,7 @@
 //   · <generador-paletas> genera una paleta → nadie la guarda.
 //   · <historial-paletas> se pintaría SIEMPRE vacío.
 //   · <mapa-ubicacion-usuario> no tendría coordenadas.
-//   · <bbva-componente> no sabría qué colores pintar.
+//   · <azul-componente> no sabría qué colores pintar.
 //
 // Este módulo es un "store" mínimo (patrón observable), sin
 // dependencias y con UNA sola instancia (los módulos ESM se

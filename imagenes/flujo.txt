@@ -27,7 +27,7 @@ características de Web Components y LitElement se emplean en ella.
     historial-paletas.js    → <historial-paletas>     historial de paletas
     reloj-usuario.js         → <reloj-usuario>          reloj + zona horaria
     mapa-ubicacion-usuario.js  → <mapa-ubicacion-usuario>   mapa Leaflet + RxJS
-    bbva-componente.js → <bbva-componente>  logo BBVA con paleta
+    azul-componente.js → <azul-componente>  logo azul con paleta
     app-panel-control.js      → <app-panel-control>       panel principal
 
   pruebas.html→ 17 pruebas unitarias nativas (sin Jest/Mocha/Vitest) que
@@ -41,7 +41,7 @@ Los 6 componentes:
   <historial-paletas>     Historial de paletas generadas
   <reloj-usuario>          Reloj en vivo con zona horaria
   <mapa-ubicacion-usuario>   Mapa OpenStreetMap (Leaflet) con la ubicación
-  <bbva-componente>  Ejemplo BBVA adaptado: logo + mensaje que cambia
+  <azul-componente>  Ejemplo azul adaptado: logo + mensaje que cambia
                         de color según la paleta activa
 
 Dependencias (todas desde CDN, sin build ni package.json):
@@ -83,8 +83,8 @@ Dependencias (todas desde CDN, sin build ni package.json):
         solo en lo necesario → se actualizan hijos, historial y estado.
       · updated() publica la nueva paleta como variables CSS → el
         logotipo del encabezado cambia de color con una transición.
-      · <bbva-componente> también se recolorea: recibe los 4
-        colores por PROPIEDAD (.paleta) y pinta su logo BBVA con un
+      · <azul-componente> también se recolorea: recibe los 4
+        colores por PROPIEDAD (.paleta) y pinta su logo azul con un
         degradado nuevo en cada paleta generada.
 
   [4] Reloj
@@ -235,8 +235,8 @@ Dependencias (todas desde CDN, sin build ni package.json):
     paleta-cambio (bubbles/composed hasta document), historial,
     reloj (formato y clearInterval), geolocalización (los 3 errores
     + éxito + reintento + precisión), mapa (guards sin librería,
-    aviso con ?oculto) y <bbva-componente> (los 4 colores de la
-    paleta pintados en el logo BBVA).
+    aviso con ?oculto) y <azul-componente> (los 4 colores de la
+    paleta pintados en el logo azul).
 
   Resultado: 17 correctas · 0 fallidas · ¡todo en verde!
 
@@ -254,7 +254,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
 
   PADRE → HIJO   por PROPIEDADES reactivas
                  (app-panel-control → historial-paletas: historial, paleta
-                  app-panel-control → bbva-componente: paleta)
+                  app-panel-control → azul-componente: paleta)
 
   HIJO → FUERA   por variables CSS heredadas
                  (app-panel-control → logotipo del documento: --paleta-N)

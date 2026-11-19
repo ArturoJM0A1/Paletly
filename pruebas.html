@@ -9,7 +9,7 @@
   <!--
     IMPORT MAP · OPEN CELLS (idéntico al de index.html)
     -----------------------------------------------------
-    bbva-componente.js importa ahora
+    azul-componente.js importa ahora
     `import { PageController } from '@open-cells/page-controller'`
     (especificador desnudo). Sin este mapa, ese import fallaría en
     esta página y las pruebas se romperían. Debe ir antes de
@@ -230,36 +230,36 @@
     async function ejecutarPruebas() {
       // ---------- Registro y generador de paletas ----------
       await probar("Los seis componentes están registrados con customElements.define()", () => {
-        ["app-panel-control", "generador-paletas", "historial-paletas", "reloj-usuario", "mapa-ubicacion-usuario", "bbva-componente"]
+        ["app-panel-control", "generador-paletas", "historial-paletas", "reloj-usuario", "mapa-ubicacion-usuario", "azul-componente"]
           .forEach((etiqueta) =>
             afirmar(!!customElements.get(etiqueta), `falta el registro de <${etiqueta}>`)
           );
       });
 
-      await probar("<bbva-componente> pinta el logo BBVA con los 4 colores de la paleta que recibe", async () => {
-        const bbva = await montar("bbva-componente"); // instancia + updateComplete
+      await probar("<azul-componente> pinta el logo azul con los 4 colores de la paleta que recibe", async () => {
+        const azul = await montar("azul-componente"); // instancia + updateComplete
 
         // El logo debe estar pintado dentro de su Shadow DOM
-        const span = bbva.shadowRoot.querySelector("h1 span");
-        afirmar(span, "no se pintó el <span> del logo BBVA");
-        afirmar(span.textContent.includes("BBVA"), "el texto del logo debe ser BBVA");
+        const span = azul.shadowRoot.querySelector("h1 span");
+        afirmar(span, "no se pintó el <span> del logo azul");
+        afirmar(span.textContent.includes("azul"), "el texto del logo debe ser azul");
 
         // Property Binding simulado: así le pasaría la paleta el dashboard
         const colores = ["#111111", "#222222", "#333333", "#444444"];
-        bbva.paleta = colores; // propiedad reactiva → nuevo render()
-        await esperarActualizacion(bbva);
+        azul.paleta = colores; // propiedad reactiva → nuevo render()
+        await esperarActualizacion(azul);
 
         // El style del span debe contener los 4 colores. Se comprueba el
         // valor BRUTO del atributo y también su forma rgb(), porque el
         // navegador puede serializar #111111 como rgb(17, 17, 17).
-        const estilo = bbva.shadowRoot.querySelector("h1 span").getAttribute("style") ?? "";
+        const estilo = azul.shadowRoot.querySelector("h1 span").getAttribute("style") ?? "";
         colores.forEach((color) =>
           afirmar(
             estilo.includes(color) || estilo.includes(aRgb(color)),
             `el color ${color} no aparece en el estilo del logo (style="${estilo}")`
           )
         );
-        desmontar(bbva); // disconnectedCallback
+        desmontar(azul); // disconnectedCallback
       });
 
       await probar("colorAleatorio() devuelve colores hexadecimales #RRGGBB en mayúsculas", () => {

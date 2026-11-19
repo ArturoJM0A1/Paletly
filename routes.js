@@ -97,11 +97,11 @@ export const routes = [
   },
 
   {
-    path: '/bbva-componente',
-    name: 'bbva-componente',
-    component: 'bbva-componente',
+    path: '/azul-componente',
+    name: 'azul-componente',
+    component: 'azul-componente',
     action: async () => {
-      await import('./bbva-componente.js');
+      await import('./azul-componente.js');
     },
   },
 ];

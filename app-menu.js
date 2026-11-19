@@ -36,7 +36,7 @@ const RUTAS = [
   { name: 'historial-paletas', etiqueta: 'Historial', href: '#!/historial-paletas', icono: 'fa-solid fa-clock-rotate-left' },
   { name: 'reloj-usuario', etiqueta: 'Reloj', href: '#!/reloj-usuario', icono: 'fa-solid fa-clock' },
   { name: 'mapa-ubicacion-usuario', etiqueta: 'Mapa', href: '#!/mapa-ubicacion-usuario', icono: 'fa-solid fa-map-location-dot' },
-  { name: 'bbva-componente', etiqueta: 'Logo BBVA', href: '#!/bbva-componente', icono: 'fa-solid fa-swatchbook' },
+  { name: 'azul-componente', etiqueta: 'Logo azul', href: '#!/azul-componente', icono: 'fa-solid fa-swatchbook' },
 ];
 
 // Hoja de estilos de Font Awesome (iconos). OJO: este menú vive en

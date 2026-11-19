@@ -46,7 +46,7 @@ class PanelPrincipal extends LitElement {
     /* CSS Grid: las tarjetas en dos columnas y el mapa a lo ancho.
        Con minmax(340px, 1fr) y un contenedor de 1040px caben siempre
        dos columnas de ~509px; en móvil pasa a una sola columna.
-       Al añadir <bbva-componente> la rejilla reparte sola el
+       Al añadir <azul-componente> la rejilla reparte sola el
        hueco extra (auto-fit), sin que haya que tocar este CSS. */
     .rejilla {
       display: grid;
@@ -338,7 +338,7 @@ class PanelPrincipal extends LitElement {
         <!-- Fuente de la paleta: al generar avisa con "paleta-cambio" -->
         <generador-paletas></generador-paletas>
         <!--
-          Componente BBVA adaptado: recibe la paleta ACTIVA por
+          Componente azul adaptado: recibe la paleta ACTIVA por
           Property Binding (.paleta=valor). Al pulsar «Generar nueva
           paleta» el dashboard cambia this.paleta → Lit repinta a sus
           hijos → este componente se recolorea con los 4 colores.
@@ -346,7 +346,7 @@ class PanelPrincipal extends LitElement {
           debe escribir el símbolo de interpolación seguido de
           llaves, porque Lit lo trataría como código y fallaría.)
         -->
-        <bbva-componente .paleta=${this.paleta}></bbva-componente>
+        <azul-componente .paleta=${this.paleta}></azul-componente>
 
         <!-- Historial: recibe el registro por propiedad (.historial) -->
         <historial-paletas .historial=${this.historial}></historial-paletas>

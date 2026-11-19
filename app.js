@@ -15,7 +15,7 @@
 //   historial-paletas.js     → <historial-paletas>     historial de paletas
 //   reloj-usuario.js          → <reloj-usuario>          reloj + zona horaria
 //   mapa-ubicacion-usuario.js   → <mapa-ubicacion-usuario>   mapa Leaflet + RxJS
-//   bbva-componente.js  → <bbva-componente>  logo BBVA con paleta
+//   azul-componente.js  → <azul-componente>  logo azul con paleta
 //   app-panel-control.js       → <app-panel-control>       panel principal
 //   pruebas.html           → 17 pruebas (importan este mismo app.js)
 //
@@ -41,5 +41,5 @@ import "./generador-paletas.js"; //genera colores
 import "./historial-paletas.js"; //historial de paletas
 import "./reloj-usuario.js"; //hora
 import "./mapa-ubicacion-usuario.js"; //mapa
-import "./bbva-componente.js"; //logo BBVA
+import "./azul-componente.js"; //logo azul
 import "./app-panel-control.js"; //Componente padre, cordinador

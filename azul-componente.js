@@ -1,4 +1,4 @@
-// Archivo: bbva-componente.js — componente <bbva-componente> de Paletly.
+// Archivo: azul-componente.js — componente <azul-componente> de Paletly.
 // Extraído de app.js (ahora hay UN archivo por componente) para
 // facilitar su estudio: el código del componente es IDÉNTICO al
 // original; solo cambia que los imports viven ahora en este archivo.
@@ -11,7 +11,7 @@ import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 // =========================================================
 // OPEN CELLS · PageController
 // ---------------------------------------------------------
-// Controlador de página del framework de rutas de BBVA (se
+// Controlador de página del framework de rutas de azul (se
 // resuelve con el import map de index.html, igual que en
 // pruebas.html). Al instanciarlo, Open Cells "enchufa" en él
 // navigate(), publish(), subscribe() y getCurrentRoute(), y
@@ -22,7 +22,7 @@ import { PageController } from '@open-cells/page-controller';
 // =========================================================
 // ALMACÉN COMPARTIDO (estado-compartido.js)
 // ---------------------------------------------------------
-// En la vista aislada (/bbva-componente) nadie le inyecta la
+// En la vista aislada (/azul-componente) nadie le inyecta la
 // paleta con .paleta=${...}: aquí la LEE del almacén y se
 // suscribe a sus cambios, de modo que el logo se recolorea con
 // la última paleta generada en CUALQUIER ruta, y con exactamente
@@ -31,10 +31,10 @@ import { PageController } from '@open-cells/page-controller';
 import { suscribir } from './estado-compartido.js';
 
 // =========================================================
-// 5) <bbva-componente>
-//    Componente adaptado del ejemplo de BBVA que se pidió
+// 5) <azul-componente>
+//    Componente adaptado del ejemplo de azul que se pidió
 //    incorporar a la aplicación.
-//    Responsabilidad: mostrar el logo "BBVA" junto a un mensaje
+//    Responsabilidad: mostrar el logo "azul" junto a un mensaje
 //    y RECOLOREARSE con la paleta activa: dentro del panel le
 //    llega por Property Binding (.paleta) y en la ruta aislada,
 //    desde el almacén compartido. En AMBOS casos se pinta con el
@@ -56,7 +56,7 @@ import { suscribir } from './estado-compartido.js';
 //    · Se envuelve en la tarjeta de cristal del resto de la app
 //      para que encaje visualmente en la rejilla del dashboard.
 // =========================================================
-class BbvaWebComponent extends LitElement {
+class azulWebComponent extends LitElement {
   // Propiedad reactiva: Lit observa sus cambios y vuelve a ejecutar
   // render() actualizando solo lo necesario (diffing).
   static properties = {
@@ -71,7 +71,7 @@ class BbvaWebComponent extends LitElement {
     /* El host (la etiqueta) ocupa toda la fila de la rejilla */
     :host { display: block; height: 100%; }
 
-    /* Respaldo por atributo: <bbva-componente ?oculto> lo oculta.
+    /* Respaldo por atributo: <azul-componente ?oculto> lo oculta.
        Es el boolean binding ?atributo trabajando sobre el HOST. */
     :host([hidden]) { display: none; }
 
@@ -179,7 +179,7 @@ class BbvaWebComponent extends LitElement {
     // Este componente se usa de DOS formas:
     //   a) DENTRO de <app-panel-control> (ruta '/'): el panel le
     //      pasa .paleta=${...} con property binding.
-    //   b) AISLADO en la ruta '/bbva-componente': el router lo
+    //   b) AISLADO en la ruta '/azul-componente': el router lo
     //      monta él solo y la paleta la toma del almacén
     //      compartido (connectedCallback).
     // El PageController es lo que permite que, en el caso (b),
@@ -202,14 +202,14 @@ class BbvaWebComponent extends LitElement {
     // connectedCallback).
     // =========================================================
     this.paleta = [];      // render() la sustituye por 4 azules por defecto
-    this.message = 'BBVA'; // texto por defecto (propiedad ya declarada)
+    this.message = 'azul'; // texto por defecto (propiedad ya declarada)
     this.params = {};      // el router rellena aquí la query de la ruta
   }
 
   // =========================================================
   // ALMACÉN COMPARTIDO · lectura de la paleta activa
   // ---------------------------------------------------------
-  // En la ruta /bbva-componente nadie le pasa .paleta=${...}:
+  // En la ruta /azul-componente nadie le pasa .paleta=${...}:
   // aquí la toma del almacén (y se suscribe a sus cambios). Si
   // dentro del panel el padre la inyecta por binding, ambos
   // caminos llevan a los MISMOS colores, así que no hay
@@ -234,8 +234,8 @@ class BbvaWebComponent extends LitElement {
   // HOOKS DE PÁGINA (PageController)
   // ---------------------------------------------------------
   // Solo se ejecutan cuando ESTE componente es la página activa
-  // del router: la ruta '/bbva-componente' publica true/false en
-  // su canal privado __oc_page_bbva-componente. Cuando el
+  // del router: la ruta '/azul-componente' publica true/false en
+  // su canal privado __oc_page_azul-componente. Cuando el
   // componente vive dentro de <app-panel-control> (ruta '/'), la
   // página activa es 'home' y estos hooks NO se llaman jamás:
   // no interfieren con el panel.
@@ -243,14 +243,14 @@ class BbvaWebComponent extends LitElement {
   onPageEnter() {
     // El router inyecta los parámetros en this.params ANTES de
     // llamar a este hook, así que aquí ya están disponibles:
-    //   #!/bbva-componente?mensaje=Hola  →  this.params.mensaje
+    //   #!/azul-componente?mensaje=Hola  →  this.params.mensaje
     if (this.params && this.params.mensaje) {
       this.message = this.params.mensaje;
     }
   }
 
   onPageLeave() {
-    this.message = 'BBVA'; // se restaura el valor por defecto
+    this.message = 'azul'; // se restaura el valor por defecto
   }
 
   render() {
@@ -296,5 +296,5 @@ class BbvaWebComponent extends LitElement {
   }
 }
 
-// REGISTRO del componente: a partir de aquí existe la etiqueta <bbva-componente>.
-customElements.define("bbva-componente", BbvaWebComponent);
+// REGISTRO del componente: a partir de aquí existe la etiqueta <azul-componente>.
+customElements.define("azul-componente", azulWebComponent);

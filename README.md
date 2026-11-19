@@ -16,7 +16,7 @@ La aplicación funciona como un panel de control reactivo que genera paletas de 
 * **Reloj local**: Hora actual y zona horaria del usuario.
 * **Mapa interactivo**: Integración con Leaflet y OpenStreetMap para mostrar la ubicación y un radio de 500 m adaptado a la paleta activa.
 * **Dashboard principal**: Coordina el Estado de la aplicación y lo publica al almacén compartido.
-* **Componente BBVA**: `<bbva-componente>` (adaptado del ejemplo de BBVA) que se recolorea con la paleta activa y se ve **idéntico** dentro del panel y en su ruta aislada.
+* **Componente azul**: `<azul-componente>` (adaptado del ejemplo de azul) que se recolorea con la paleta activa y se ve **idéntico** dentro del panel y en su ruta aislada.
 * **Menú vertical fijo**: Rail de iconos de Font Awesome a la izquierda, visible en todas las rutas, sin texto (solo iconos con tooltip y nombre accesible).
 ---
 
@@ -29,7 +29,7 @@ La aplicación se divide en **siete** componentes, cada uno encapsulado en su pr
 3. **`<historial-paletas>` (`historial-paletas.js`)**: Renderiza la lista cronológica inversa de todas las paletas generadas. Dentro del panel recibe los datos por propiedad; en su ruta aislada los lee del almacén compartido (por eso nunca aparece vacío).
 4. **`<reloj-usuario>` (`reloj-usuario.js`)**: Muestra la hora local en formato de 24 horas (actualizada cada segundo) y detecta la zona horaria mediante `Intl.DateTimeFormat`, que notifica con el evento `zona-horaria`.
 5. **`<mapa-ubicacion-usuario>` (`mapa-ubicacion-usuario.js`)**: Dibuja un mapa interactivo con **Leaflet** y OpenStreetMap centrado en la ubicación del usuario. Usa **RxJS** (`interval`) para alternar cada 2 segundos entre un círculo y un cuadrado de 500 m coloreados con la paleta activa. Lee coordenadas, paleta y aviso de permiso del almacén compartido.
-6. **`<bbva-componente>` (`bbva-componente.js`)**: Componente de identidad visual que adapta dinámicamente el degradado de su logotipo e icono con los 4 colores de la paleta vigente. Usa el `PageController` de Open Cells (navegación y hooks de página); en su ruta aislada pinta **exactamente el mismo HTML** que dentro del panel y toma los colores del almacén.
+6. **`<azul-componente>` (`azul-componente.js`)**: Componente de identidad visual que adapta dinámicamente el degradado de su logotipo e icono con los 4 colores de la paleta vigente. Usa el `PageController` de Open Cells (navegación y hooks de página); en su ruta aislada pinta **exactamente el mismo HTML** que dentro del panel y toma los colores del almacén.
 7. **`<app-menu>` (`app-menu.js`)**: Menú de navegación SPA en un **rail vertical fijo** al borde izquierdo (72 px, 60 px en móvil) con **solo iconos de Font Awesome** (sin texto): la etiqueta original se conserva como `title` (tooltip) y `aria-label` (accesibilidad). La ruta activa se resalta con el degradado de la paleta actual.
 
 ---
@@ -45,7 +45,7 @@ El enrutador (`routes.js`, framework **Open Cells**) gestiona tanto la vista uni
 | `#!/historial-paletas` | `<historial-paletas>` | Vista independiente con el registro de paletas guardadas. |
 | `#!/reloj-usuario` | `<reloj-usuario>` | Muestra la hora local del usuario de forma aislada. |
 | `#!/mapa-ubicacion-usuario` | `<mapa-ubicacion-usuario>` | Visualiza la geolocalización leyendo el estado compartido (su ruta pide la ubicación una sola vez para toda la app). |
-| `#!/bbva-componente` | `<bbva-componente>` | Logotipo BBVA aislado, con el mismo aspecto y centrado que en el panel. |
+| `#!/azul-componente` | `<azul-componente>` | Logotipo azul aislado, con el mismo aspecto y centrado que en el panel. |
 
 El menú `<app-menu>` vive **fuera** del contenedor de rutas (`#app-content`), por lo que el router no lo toca al cambiar de vista: permanece siempre visible.
 
@@ -60,14 +60,14 @@ Fuente única de verdad de la aplicación: `paleta`, `historial`, `latitud`/`lon
 
 ### 2. Eventos hacia arriba (`CustomEvent`)
 Los hijos notifican cambios atravesando el Shadow DOM con `bubbles: true` y `composed: true`:
-* **`paleta-cambio`**: Emitido por `<generador-paletas>` con `detail: { colores }`. Lo captura `main.js` → almacén → todos los componentes (panel, historial, bbva, mapa…).
+* **`paleta-cambio`**: Emitido por `<generador-paletas>` con `detail: { colores }`. Lo captura `main.js` → almacén → todos los componentes (panel, historial, azul, mapa…).
 * **`zona-horaria`**: Emitido por `<reloj-usuario>` con `detail: { zona }`. Lo captura `main.js` → almacén → `<app-panel-control>`.
 * **`ubicacion-actualizada`**: Emitido por `<app-panel-control>` con `detail: { latitud, longitud, precision, estado, mensajeEstado }` cuando la geolocalización resuelve. Lo captura `main.js` → almacén → `<mapa-ubicacion-usuario>` (el mapa aislado siempre muestra lo mismo que el panel, en cualquier dirección de navegación).
 
 ### 3. Propiedades hacia abajo (*Property Binding*)
 Dentro de `<app-panel-control>` se distribuyen los datos reactivos con la sintaxis `.propiedad=${valor}` de Lit:
 * `.historial` $\rightarrow$ `<historial-paletas>`
-* `.paleta` $\rightarrow$ `<bbva-componente>` y `<mapa-ubicacion-usuario>`
+* `.paleta` $\rightarrow$ `<azul-componente>` y `<mapa-ubicacion-usuario>`
 * `.latitud`, `.longitud`, `.aviso` $\rightarrow$ `<mapa-ubicacion-usuario>`
 
 ### 4. Variables CSS hacia el documento global
