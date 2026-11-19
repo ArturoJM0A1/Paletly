@@ -16,7 +16,7 @@ class HistorialPaletas extends LitElement {
   // Propiedad reactiva: lista de paletas, cada una con sus 4 colores.
   static properties = {
     historial: { type: Array } // Array de arrays: [["#AA..", "#BB..", ...], ...]
-  };
+  }; 
 
   // Estilos encapsulados en el Shadow DOM (se repiten por diseño).
   static styles = css`
@@ -141,8 +141,9 @@ class HistorialPaletas extends LitElement {
                 ${this.historial.map(
                   (paleta, indice) => html`
                     <li class="entrada">
-                      <span class="entrada__indice">Paleta ${this.historial.length}</span>
+                            <!-- Indice inicia en 0 - 1 se reta para para obtener todo el historial-->
 
+                      <span class="entrada__indice">Paleta ${this.historial.length - indice}</span>
                       <!-- Muestra visual de los 4 colores guardados -->
                       <div class="entrada__colores">
                         ${paleta.map(
@@ -151,7 +152,7 @@ class HistorialPaletas extends LitElement {
                       </div>
 
                       <!-- Los 4 valores en texto (hex) para poder copiarlos -->
-                      <code class="entrada__hex">${paleta.join(" · ")}</code>
+                      <code class="entrada__hex">${paleta.join("  ✦  ")}</code>
                     </li>
                   `
                 )}
