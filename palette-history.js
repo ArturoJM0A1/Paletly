@@ -143,7 +143,7 @@ class HistorialPaletas extends LitElement {
                     <li class="entrada">
                             <!-- Indice inicia en 0 - 1 se reta para para obtener todo el historial-->
 
-                      <span class="entrada__indice">Paleta ${this.historial.length - indice}</span>
+                      <span class="entrada__indice">Paleta ${this.historial.length}</span>
                       <!-- Muestra visual de los 4 colores guardados -->
                       <div class="entrada__colores">
                         ${paleta.map(
@@ -152,7 +152,7 @@ class HistorialPaletas extends LitElement {
                       </div>
 
                       <!-- Los 4 valores en texto (hex) para poder copiarlos -->
-                      <code class="entrada__hex">${paleta.join("  ✦  ")}</code>
+                      <code class="entrada__hex">${paleta.join("    ✦    ")}</code>
                     </li>
                   `
                 )}
