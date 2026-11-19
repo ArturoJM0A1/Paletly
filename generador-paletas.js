@@ -85,7 +85,7 @@ class GeneradorPaleta extends LitElement {
       padding: 12px 14px;
       border: 0;
       border-radius: 14px;
-      background: linear-gradient(110deg, #60a5fa, #7dd3fc);
+      background: linear-gradient(110deg, #001491, #003772);
       box-shadow: 0 10px 22px rgba(59, 130, 246, 0.28);
       color: #ffffff;
       cursor: pointer;
