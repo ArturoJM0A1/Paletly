@@ -123,7 +123,7 @@ class BbvaWebComponent extends LitElement {
     super(); // obligatorio: llama al constructor de LitElement (herencia)
     // Mensaje por defecto: el original decía 'use Web Components 🚀HJ'
     // (la "HJ" eran teclas sobrantes); se limpia el texto.
-    this.message = "use Web Components 🚀";
+    this.message = "Use Web Components 🚀";
     // Estado inicial: aún sin paleta; la pinta el dashboard al montarse.
     this.paleta = [];
   }
