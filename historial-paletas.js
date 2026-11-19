@@ -144,8 +144,10 @@ class HistorialPaletas extends LitElement {
                   (paleta, indice) => html`
                     <li class="entrada">
                             <!-- Indice inicia en 0 - 1 se reta para para obtener todo el historial-->
+                            <!-- Se reccore el array y le va restando 1 para que no salga siempre la actual,
+                             ejempo 12 11 10 9 8 7 6 5 4 3 2 1 -->
 
-                      <span class="entrada__indice">Paleta ${this.historial.length}</span>
+                      <span class="entrada__indice">Paleta ${this.historial.length - indice}</span>
                       <!-- Muestra visual de los 4 colores guardados -->
                       <div class="entrada__colores">
                         ${paleta.map(
