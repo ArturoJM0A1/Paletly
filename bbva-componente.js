@@ -279,7 +279,6 @@ class BbvaWebComponent extends LitElement {
           · background-image → degradado con los 4 colores de la paleta
         -->
         <h1>
-          <span style="background-color: ${c1}; background-image: ${degradado}">BBVA</span>
           <br>          
 <div class="cellsicon" style="background-image: ${degradado};"></div>
 <div class="liticon" style="background-image: ${degradado};"></div>
