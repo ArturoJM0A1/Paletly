@@ -92,4 +92,8 @@ npx serve -l 4173 .
 
 Las pruebas montan los componentes sin `main.js` ni el router, por lo que no se altera el almacén compartido durante su ejecución.
 
+## Cambios futuros
+
+Añadir envio a backend en Java y persistencia en bases de datos ya sea en SQL Server o MySQL 
+
 ### By: Arturo Juárez Monroy
