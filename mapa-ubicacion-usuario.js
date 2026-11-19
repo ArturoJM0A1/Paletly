@@ -28,7 +28,7 @@ import { suscribir } from "./estado-compartido.js";
 // 4) <mapa-ubicacion-usuario>
 //    Responsabilidad: pintar las coordenadas sobre OpenStreetMap
 //    (Leaflet) con un marcador y una forma de 500 m coloreada con
-//    la paleta activa. Cada 7 segundos, mediante un Observable de
+//    la paleta activa. Cada 2 segundos, mediante un Observable de
 //    RxJS, la forma alterna entre CÍRCULO y CUADRADO.
 //    No necesita clave de API.
 // =========================================================
@@ -44,47 +44,45 @@ class UbicacionMapa extends LitElement {
     paleta: { type: Array },
     aviso: { type: String },   // String: estado de permiso recibido del padre
     mensaje: { type: String }, // String: carga / error del propio mapa
-    forma: { type: String }    // String: "círculo" | "cuadrado" (alterna cada 7 s)
+    forma: { type: String }    // String: "círculo" | "cuadrado" (alterna cada 2 s)
   };
 
   static styles = css`
     /* El host es relativo para que el aviso (.aviso) pueda
        superponerse al mapa con position:absolute */
-    :host { display: block; position: relative; }
+:host {
+      display: block;
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
 
-    .tarjeta {
-      padding: 24px;
+    }
+
+.tarjeta {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 3px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;
-      /* Sin backdrop-filter aquí: un desenfoque de cristal sobre el lienzo
-         del mapa hace que los tiles se rastericen a menor resolución y el
-         mapa se vea borroso. Se mantiene el efecto cristal con el fondo
-         blanco translúcido. */
       background: rgba(255, 255, 255, 0.72);
       box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
+            height: 313px;
+            overflow: hidden;
+
     }
 
-    /* Etiqueta pequeña en mayúsculas (cabecera de la tarjeta) */
-    .marca {
-      color: #2b6cb0;
-      font-size: 0.7rem;
-      font-weight: 760;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-
-    /* Título de la tarjeta */
-    h2 { margin: 8px 0 16px; color: #0f2d4a; font-size: 1.35rem; letter-spacing: -0.02em; }
 
     /* Contenedor del mapa: Leaflet pinta aquí dentro.
        position:relative hace de referencia al aviso absoluto. */
     .mapa {
       position: relative;
-      height: clamp(300px, 45vh, 430px);
+      height: 90%;
       border-radius: 18px;
       overflow: hidden;
       background: linear-gradient(180deg, #dbf1ff, #f0faff);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+      botom: 0px;
+      margin-bottom: 0px;
     }
 
     /* Aviso de carga / error / permiso denegado (superpuesto al mapa).
@@ -189,7 +187,7 @@ class UbicacionMapa extends LitElement {
     if (!this.mapa) {
       this.crearMapa();
       if (!this.mapa && !this.errorLibreria && this.latitud !== null) {
-        this.mensaje = "Preparando el mapa…";
+        this.mensaje = "Preparando";
       }
     }
 
@@ -216,7 +214,7 @@ class UbicacionMapa extends LitElement {
       this.bajaAlmacen();
       this.bajaAlmacen = null;
     }
-    // RxJS: cancelar la suscripción detiene el intervalo de 7 s.
+    // RxJS: cancelar la suscripción detiene el intervalo de 2 s.
     // Sin esto, el Observable seguiría emitiendo sobre un mapa
     // ya destruido (fuga de memoria / errores en consola).
     if (this.suscripcionForma) {
@@ -296,17 +294,17 @@ class UbicacionMapa extends LitElement {
     });
 
     // =====================================================
-    // RXJS · ALTERNAR FORMA CADA 7 SEGUNDOS
+    // RXJS · ALTERNAR FORMA CADA 2 SEGUNDOS
     // -----------------------------------------------------
-    // interval(7000) es un Observable que emite 0, 1, 2… cada
-    // 7000 ms (como setInterval, pero cancelable de forma
+    // interval(2000) es un Observable que emite 0, 1, 2… cada
+    // 2000 ms (como setInterval, pero cancelable de forma
     // limpia con unsubscribe()).
-    //   indice+1 → la 1ª emisión (a los 7 s) pasa de 0 a 1 y
+    //   indice+1 → la 1ª emisión (a los 2 s) pasa de 0 a 1 y
     //   muestra el cuadrado; la siguiente vuelve al círculo…
     //   alternando círculo ↔ cuadrado para siempre.
     // El parámetro "indice" es el valor emitido por RxJS.
     // =====================================================
-    this.suscripcionForma = interval(7000).subscribe((indice) => {
+    this.suscripcionForma = interval(2000).subscribe((indice) => {
       this.alternarForma(indice + 1);
     });
 
@@ -383,12 +381,11 @@ class UbicacionMapa extends LitElement {
     const aviso = this.mensaje || (hayCoordenadas ? "" : this.aviso);
     return html`
       <article class="tarjeta">
-        <p class="marca">Mapa · OpenStreetMap</p>
-        <h2>Tu ubicación</h2>
+
 
         <!-- Contenedor del mapa: existe desde el primer render -->
         <div class="mapa" id="mapa"></div>
-
+ 
         <!-- Boolean Binding ?oculto: muestra el aviso solo si hay mensaje -->
         <p class="aviso" ?oculto=${aviso === ""}>${aviso}</p>
 
@@ -397,7 +394,7 @@ class UbicacionMapa extends LitElement {
             ? html`Latitud <strong>${this.latitud.toFixed(4)}</strong> ·
                    Longitud <strong>${this.longitud.toFixed(4)}</strong> ·
                    ${this.forma} de 500 m`
-            : "Sin coordenadas: acepta el permiso de ubicación para ver el mapa."}
+            : "Debes aceptar el permiso"}
         </p>
       </article>
     `;

@@ -83,7 +83,6 @@ class PanelPrincipal extends LitElement {
       font-size: 0.7rem;
       font-weight: 760;
       letter-spacing: 0.14em;
-      text-transform: uppercase;
     }
 
     /* Punto de estado: Boolean Binding ?encendido → atributo presente/ausente */
@@ -384,9 +383,8 @@ class PanelPrincipal extends LitElement {
             : ""}
         </section>
 
-        <!-- Property Binding (.prop): el mapa recibe datos tipados del padre -->
+<!-- Antes: class="ancho-completo" hacía que ocupara todas las columnas -->
         <mapa-ubicacion-usuario
-          class="ancho-completo"
           .latitud=${this.latitud}
           .longitud=${this.longitud}
           .paleta=${this.paleta}

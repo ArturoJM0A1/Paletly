@@ -52,7 +52,7 @@ class HistorialPaletas extends LitElement {
       font-size: 0.6rem;
       font-weight: 760;
       letter-spacing: 0.14em;
-      text-transform: uppercase;
+       
     }
 
     /* Título de la tarjeta */
@@ -100,7 +100,7 @@ class HistorialPaletas extends LitElement {
       font-size: 0.68rem;
       font-weight: 760;
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+       
             text-align: center;
 
     }

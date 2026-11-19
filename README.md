@@ -8,7 +8,7 @@ Aplicación web minimalista construida con **Web Components** y **Lit**, con dis
 * **Historial**: Muestra el registro de paletas generadas (compartido entre todas las rutas).
 * **Reloj local**: Hora actual y zona horaria del usuario.
 * **Mapa interactivo**: Integración con Leaflet y OpenStreetMap para mostrar la ubicación y un radio de 500 m adaptado a la paleta activa.
-* **Dashboard principal**: Coordina el estado de la aplicación y lo publica al almacén compartido.
+* **Dashboard principal**: Coordina el Estado de la aplicación y lo publica al almacén compartido.
 * **Componente BBVA**: `<bbva-componente>` (adaptado del ejemplo de BBVA) que se recolorea con la paleta activa y se ve **idéntico** dentro del panel y en su ruta aislada.
 * **Menú vertical fijo**: Rail de iconos de Font Awesome a la izquierda, visible en todas las rutas, sin texto (solo iconos con tooltip y nombre accesible).
 
@@ -22,7 +22,7 @@ La aplicación se divide en **siete** componentes, cada uno encapsulado en su pr
 2. **`<generador-paletas>` (`generador-paletas.js`)**: Genera aleatoriamente cuatro códigos hexadecimales (`#RRGGBB`) al montarse o al pulsar su botón, y los notifica con el evento `paleta-cambio`.
 3. **`<historial-paletas>` (`historial-paletas.js`)**: Renderiza la lista cronológica inversa de todas las paletas generadas. Dentro del panel recibe los datos por propiedad; en su ruta aislada los lee del almacén compartido (por eso nunca aparece vacío).
 4. **`<reloj-usuario>` (`reloj-usuario.js`)**: Muestra la hora local en formato de 24 horas (actualizada cada segundo) y detecta la zona horaria mediante `Intl.DateTimeFormat`, que notifica con el evento `zona-horaria`.
-5. **`<mapa-ubicacion-usuario>` (`mapa-ubicacion-usuario.js`)**: Dibuja un mapa interactivo con **Leaflet** y OpenStreetMap centrado en la ubicación del usuario. Usa **RxJS** (`interval`) para alternar cada 7 segundos entre un círculo y un cuadrado de 500 m coloreados con la paleta activa. Lee coordenadas, paleta y aviso de permiso del almacén compartido.
+5. **`<mapa-ubicacion-usuario>` (`mapa-ubicacion-usuario.js`)**: Dibuja un mapa interactivo con **Leaflet** y OpenStreetMap centrado en la ubicación del usuario. Usa **RxJS** (`interval`) para alternar cada 2 segundos entre un círculo y un cuadrado de 500 m coloreados con la paleta activa. Lee coordenadas, paleta y aviso de permiso del almacén compartido.
 6. **`<bbva-componente>` (`bbva-componente.js`)**: Componente de identidad visual que adapta dinámicamente el degradado de su logotipo e icono con los 4 colores de la paleta vigente. Usa el `PageController` de Open Cells (navegación y hooks de página); en su ruta aislada pinta **exactamente el mismo HTML** que dentro del panel y toma los colores del almacén.
 7. **`<app-menu>` (`app-menu.js`)**: Menú de navegación SPA en un **rail vertical fijo** al borde izquierdo (72 px, 60 px en móvil) con **solo iconos de Font Awesome** (sin texto): la etiqueta original se conserva como `title` (tooltip) y `aria-label` (accesibilidad). La ruta activa se resalta con el degradado de la paleta actual.
 

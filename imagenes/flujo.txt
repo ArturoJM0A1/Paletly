@@ -48,7 +48,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
 
   Lit 3         → motor de Web Components reactivos (los 6 archivos .js)
   Leaflet 1.9.4 → mapa de OpenStreetMap, sin clave de API
-  RxJS 7        → programación reactiva: el intervalo de 7 s que
+  RxJS         → programación reactiva: el intervalo de 2 s que
                   alterna la forma del mapa (círculo ↔ cuadrado)
 
 
@@ -107,7 +107,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
       y muestra el aviso de permiso con el binding ?oculto.
       Si cambia la paleta, recolorea marcador y formas.
 
-      · RxJS cada 7 segundos: un Observable interval(7000) alterna
+      · RxJS cada 2 segundos: un Observable interval(2000) alterna
         la forma visible entre CÍRCULO (L.circle) y CUADRADO
         (L.rectangle). Cada emisión retira una capa del mapa y añade
         la otra (removeLayer + addTo) y actualiza la propiedad

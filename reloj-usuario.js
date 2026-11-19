@@ -42,7 +42,7 @@ class RelojUsuario extends LitElement {
       font-size: 0.7rem;
       font-weight: 760;
       letter-spacing: 0.14em;
-      text-transform: uppercase;
+       
     }
 
     /* Título de la tarjeta */
