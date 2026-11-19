@@ -28,10 +28,7 @@
     usan la MISMA URL → es una sola petición (en caché).
     =========================================================
   -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
   <!--
     =========================================================
@@ -168,7 +165,9 @@
        ni siquiera cabe entera: aquí se prioriza que la vista
        aislada se vea completa y centrada en el hueco disponible. */
     @media (max-width: 760px) {
-      #app-content { min-width: 0; }
+      #app-content {
+        min-width: 0;
+      }
     }
 
     /* =========================================================
@@ -186,12 +185,12 @@
        El panel y el mapa son casos especiales: ocupan las 3
        columnas (lo mismo que .ancho-completo dentro del panel).
        ========================================================= */
-    #app-content > :not(app-panel-control):not(mapa-ubicacion-usuario) {
+    #app-content> :not(app-panel-control):not(mapa-ubicacion-usuario) {
       width: max(320px, calc((100% - 20px) / 3));
     }
 
-    #app-content > app-panel-control,
-    #app-content > mapa-ubicacion-usuario {
+    #app-content>app-panel-control,
+    #app-content>mapa-ubicacion-usuario {
       width: 100%;
     }
 
@@ -206,7 +205,7 @@
          state="cached"    → página visitada hace tiempo
        Sin esta regla, todas las vistas se verían a la vez.
        ========================================================= */
-    #app-content > [state]:not([state='active']) {
+    #app-content>[state]:not([state='active']) {
       display: none;
     }
 
@@ -214,7 +213,7 @@
        left/right fijados para que quede centrada sobre el CONTENIDO
        (que empieza a los 88px, después del rail del menú). */
     .encabezado {
-   text-align: center;
+      text-align: center;
       position: fixed;
       z-index: 3;
       left: 0px;
@@ -309,30 +308,32 @@
       margin-left: 9px;
       margin-top: 7px;
 
-        animation: girarLogotipo 5s linear infinite,
-            brilloLogotipo 3s ease-in-out infinite alternate;
+      animation: girarLogotipo 5s linear infinite,
+        brilloLogotipo 3s ease-in-out infinite alternate;
 
     }
 
-@keyframes girarLogotipo {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+    @keyframes girarLogotipo {
+      from {
+        transform: rotate(0deg);
+      }
 
-@keyframes brilloLogotipo {
-  from {
-    filter: brightness(0.88);
-    box-shadow: 0 0 4px var(--paleta-2, #38bdf8);
-  }
-  to {
-    filter: brightness(1.18);
-    box-shadow: 0 0 12px var(--paleta-3, #7dd3fc);
-  }
-}
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes brilloLogotipo {
+      from {
+        filter: brightness(0.88);
+        box-shadow: 0 0 4px var(--paleta-2, #38bdf8);
+      }
+
+      to {
+        filter: brightness(1.18);
+        box-shadow: 0 0 12px var(--paleta-3, #7dd3fc);
+      }
+    }
 
     /* Pie de página: créditos y enlace a las pruebas unitarias */
     .pie {
@@ -416,8 +417,7 @@
     <div id="app-content"></div>
 
     <footer class="pie">
-      Hecho con cafeína 
-      <a href="./pruebas.html">pruebas unitarias</a>
+      𑣲☕︎ <a href="./pruebas.html">pruebas unitarias</a>
     </footer>
   </main>
 
