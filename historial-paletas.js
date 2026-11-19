@@ -38,14 +38,14 @@ class HistorialPaletas extends LitElement {
     /* Etiqueta pequeña en mayúsculas (cabecera de la tarjeta) */
     .marca {
       color: #2b6cb0;
-      font-size: 0.7rem;
+      font-size: 0.6rem;
       font-weight: 760;
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
 
     /* Título de la tarjeta */
-    h2 { margin: 8px 0 4px; color: #0f2d4a; font-size: 1.35rem; letter-spacing: -0.02em; }
+    h2 { margin: 4px 0 4px; color: #0f2d4a; font-size: 1.3rem; letter-spacing: -0.02em; }
 
     /* Contador de paletas guardadas (se escribe en singular o plural) */
     .contador { margin: 0 0 14px; color: #5b7fa6; font-size: 0.82rem; }
@@ -56,7 +56,7 @@ class HistorialPaletas extends LitElement {
       gap: 10px;
       max-height: 268px;
       margin: 0;
-      padding: 2px 8px 2px 0;
+      padding: 2px 6px 2px 0;
       overflow-y: auto;
       list-style: none;
     }
@@ -70,13 +70,13 @@ class HistorialPaletas extends LitElement {
       background: rgba(53, 91, 230, 0.81);
       border-radius: 999px;
     }
-    .lista { scrollbar-width: thin; scrollbar-color: rgba(56, 117, 248, 0.65) rgba(125, 211, 252, 0.18); }
+    .lista { scrollbar-width: thin; scrollbar-color: rgba(157, 188, 255, 0.65) rgba(125, 211, 252, 0.18); }
 
     /* Cada paleta del historial: tarjeta pequeña dentro de la lista */
     .entrada {
       display: grid;
       gap: 7px;
-      padding: 11px 11px;
+      padding: 8px 8px;
       border: 1px solid rgba(255, 255, 255, 0.9);
       border-bottom: 2px solid rgba(187, 219, 255, 0.9);
       border-radius: 14px;
@@ -90,6 +90,8 @@ class HistorialPaletas extends LitElement {
       font-weight: 760;
       letter-spacing: 0.1em;
       text-transform: uppercase;
+            text-align: center;
+
     }
 
     /* Las 4 muestras de cada paleta guardada */
@@ -97,8 +99,8 @@ class HistorialPaletas extends LitElement {
 
     /* Miniatura de UN solo color de la paleta guardada */
     .celda {
-      height: 32px;
-      border-radius: 8px;
+      height: 12px;
+      border-radius: 4px;
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
     }
 
