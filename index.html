@@ -307,9 +307,31 @@
       transition: background-color 300ms ease;
       margin-left: 9px;
       margin-top: 7px;
+
+        animation: girarLogotipo 5s linear infinite,
+            brilloLogotipo 3s ease-in-out infinite alternate;
+
     }
 
+@keyframes girarLogotipo {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 
+@keyframes brilloLogotipo {
+  from {
+    filter: brightness(0.9);
+    box-shadow: 0 0 4px var(--paleta-2, #38bdf8);
+  }
+  to {
+    filter: brightness(1.18);
+    box-shadow: 0 0 12px var(--paleta-3, #7dd3fc);
+  }
+}
 
     /* Pie de página: créditos y enlace a las pruebas unitarias */
     .pie {
