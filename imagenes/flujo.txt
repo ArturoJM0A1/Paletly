@@ -26,7 +26,7 @@ características de Web Components y LitElement se emplean en ella.
     generador-paletas.js  → <generador-paletas>   generador aleatorio
     historial-paletas.js    → <historial-paletas>     historial de paletas
     reloj-usuario.js         → <reloj-usuario>          reloj + zona horaria
-    user-location-map.js  → <user-location-map>   mapa Leaflet + RxJS
+    mapa-ubicacion-usuario.js  → <mapa-ubicacion-usuario>   mapa Leaflet + RxJS
     bbva-web-component.js → <bbva-web-component>  logo BBVA con paleta
     app-dashboard.js      → <app-dashboard>       panel principal
 
@@ -40,7 +40,7 @@ Los 6 componentes:
   <generador-paletas>   Generador de 4 colores aleatorios
   <historial-paletas>     Historial de paletas generadas
   <reloj-usuario>          Reloj en vivo con zona horaria
-  <user-location-map>   Mapa OpenStreetMap (Leaflet) con la ubicación
+  <mapa-ubicacion-usuario>   Mapa OpenStreetMap (Leaflet) con la ubicación
   <bbva-web-component>  Ejemplo BBVA adaptado: logo + mensaje que cambia
                         de color según la paleta activa
 
@@ -95,13 +95,13 @@ Dependencias (todas desde CDN, sin build ni package.json):
   [5] Ubicación real (sin coordenadas inventadas)
       · El navegador pide permiso (geolocalización).
       · Éxito → latitud/longitud reales + precisión (± m) → se pasan a
-        <user-location-map> por propiedades.
+        <mapa-ubicacion-usuario> por propiedades.
       · Fallo → mensaje según el código (1 denegado, 2 no disponible,
         3 tiempo agotado) + botón "Reintentar ubicación". Las
         coordenadas se quedan en null: NUNCA se inventan datos.
 
   [6] Mapa
-      <user-location-map> espera a que Leaflet esté disponible
+      <mapa-ubicacion-usuario> espera a que Leaflet esté disponible
       (promesa), crea el mapa centrado en las coordenadas, marca el
       punto con un marcador y una forma de 500 m (círculo o cuadrado),
       y muestra el aviso de permiso con el binding ?oculto.
@@ -178,7 +178,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
         a ejecutar render() y actualiza SOLO lo que cambió (diffing).
         Se declaran con su tipo: { type: Number }, { type: Array },
         { type: String }.
-        Ejemplo clave: "mensaje" en <user-location-map> debe estar en
+        Ejemplo clave: "mensaje" en <mapa-ubicacion-usuario> debe estar en
         esta lista; si no, un error pintado dentro de updated() nunca
         llegaría al DOM (fallo detectado por las pruebas unitarias).
 

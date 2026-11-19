@@ -1,4 +1,4 @@
-// Archivo: user-location-map.js — componente <user-location-map> de Paletly.
+// Archivo: mapa-ubicacion-usuario.js — componente <mapa-ubicacion-usuario> de Paletly.
 // Extraído de app.js (ahora hay UN archivo por componente) para
 // facilitar su estudio: el código del componente es IDÉNTICO al
 // original; solo cambia que los imports viven ahora en este archivo.
@@ -14,7 +14,7 @@ import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 import { interval } from "https://cdn.jsdelivr.net/npm/rxjs@7.8.1/+esm";
 
 // =========================================================
-// 4) <user-location-map>
+// 4) <mapa-ubicacion-usuario>
 //    Responsabilidad: pintar las coordenadas sobre OpenStreetMap
 //    (Leaflet) con un marcador y una forma de 500 m coloreada con
 //    la paleta activa. Cada 7 segundos, mediante un Observable de
@@ -374,5 +374,5 @@ class UbicacionMapa extends LitElement {
   }
 }
 
-// REGISTRO del componente: existe la etiqueta <user-location-map>.
-customElements.define("user-location-map", UbicacionMapa);
+// REGISTRO del componente: existe la etiqueta <mapa-ubicacion-usuario>.
+customElements.define("mapa-ubicacion-usuario", UbicacionMapa);

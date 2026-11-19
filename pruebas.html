@@ -210,7 +210,7 @@
     async function ejecutarPruebas() {
       // ---------- Registro y generador de paletas ----------
       await probar("Los seis componentes están registrados con customElements.define()", () => {
-        ["app-dashboard", "generador-paletas", "historial-paletas", "reloj-usuario", "user-location-map", "bbva-web-component"]
+        ["app-dashboard", "generador-paletas", "historial-paletas", "reloj-usuario", "mapa-ubicacion-usuario", "bbva-web-component"]
           .forEach((etiqueta) =>
             afirmar(!!customElements.get(etiqueta), `falta el registro de <${etiqueta}>`)
           );
@@ -451,8 +451,8 @@
       });
 
       // ---------- Mapa (OpenStreetMap / Leaflet) ----------
-      await probar("<user-location-map> no monta el mapa sin la librería cargada", async () => {
-        const mapa = await montar("user-location-map");
+      await probar("<mapa-ubicacion-usuario> no monta el mapa sin la librería cargada", async () => {
+        const mapa = await montar("mapa-ubicacion-usuario");
         // En pruebas.html no se carga Leaflet: libreriaLista queda en false
         mapa.latitud = 19.4326;
         mapa.longitud = -99.1332;
@@ -467,8 +467,8 @@
         desmontar(mapa);
       });
 
-      await probar("<user-location-map> oculta el aviso con ?oculto cuando no hay mensaje", async () => {
-        const mapa = await montar("user-location-map");
+      await probar("<mapa-ubicacion-usuario> oculta el aviso con ?oculto cuando no hay mensaje", async () => {
+        const mapa = await montar("mapa-ubicacion-usuario");
         const nodoAviso = mapa.shadowRoot.querySelector(".aviso");
 
         mapa.aviso = "Permiso de ubicación denegado por el usuario."; // propiedad reactiva
@@ -483,7 +483,7 @@
       });
 
       await probar("actualizarColores() tolera no tener círculo todavía (guards)", async () => {
-        const mapa = await montar("user-location-map");
+        const mapa = await montar("mapa-ubicacion-usuario");
         mapa.paleta = ["#111111", "#222222", "#333333", "#444444"]; // dispara updated()
         await esperarActualizacion(mapa);
 

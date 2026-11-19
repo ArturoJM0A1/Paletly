@@ -39,9 +39,9 @@ class PanelPrincipal extends LitElement {
        hueco extra (auto-fit), sin que haya que tocar este CSS. */
     .rejilla {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 16px;
-      width: min(100%, 1040px);
+      grid-template-columns: repeat(3, minmax(320px, 1fr));
+      gap: 10px;
+      width: min(100%, 1090px);
       margin: 0 auto;
     }
 
@@ -309,13 +309,13 @@ class PanelPrincipal extends LitElement {
         </section>
 
         <!-- Property Binding (.prop): el mapa recibe datos tipados del padre -->
-        <user-location-map
+        <mapa-ubicacion-usuario
           class="ancho-completo"
           .latitud=${this.latitud}
           .longitud=${this.longitud}
           .paleta=${this.paleta}
           .aviso=${this.mensajeEstado}
-        ></user-location-map>
+        ></mapa-ubicacion-usuario>
       </div>
     `;
   }

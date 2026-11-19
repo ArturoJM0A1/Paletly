@@ -1,0 +1,155 @@
+ENTIDAD JPA (HistorialPaleta.java)
+
+package com.paletly.backend.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "HistorialPaletas")
+public class HistorialPaleta {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "Id")
+    private Integer id;
+
+    @Column(name = "Color1", length = 7, nullable = false)
+    private String color1;
+
+    @Column(name = "Color2", length = 7, nullable = false)
+    private String color2;
+
+    @Column(name = "Color3", length = 7, nullable = false)
+    private String color3;
+
+    @Column(name = "Color4", length = 7, nullable = false)
+    private String color4;
+
+    @Column(name = "FechaCreacion", nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
+    }
+
+    public HistorialPaleta() {}
+
+    public HistorialPaleta(String color1, String color2, String color3, String color4) {
+        this.color1 = color1;
+        this.color2 = color2;
+        this.color3 = color3;
+        this.color4 = color4;
+    }
+
+    // Getters y Setters
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+
+    public String getColor1() { return color1; }
+    public void setColor1(String color1) { this.color1 = color1; }
+
+    public String getColor2() { return color2; }
+    public void setColor2(String color2) { this.color2 = color2; }
+
+    public String getColor3() { return color3; }
+    public void setColor3(String color3) { this.color3 = color3; }
+
+    public String getColor4() { return color4; }
+    public void setColor4(String color4) { this.color4 = color4; }
+
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+}
+
+
+================================================================================
+4. DTO DE ENTRADA/SALIDA (PaletaDTO.java)
+================================================================================
+
+package com.paletly.backend.dto;
+
+import java.util.List;
+
+// Recibe y devuelve el mismo formato que maneja el frontend: { "colores": ["#AABBCC", ...] }
+public record PaletaDTO(List<String> colores) {}
+
+
+================================================================================
+5. REPOSITORIO JPA (HistorialPaletaRepository.java)
+================================================================================
+
+package com.paletly.backend.repository;
+
+import com.paletly.backend.model.HistorialPaleta;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+
+@Repository
+public interface HistorialPaletaRepository extends JpaRepository<HistorialPaleta, Integer> {
+    // Devuelve primero la paleta más reciente (igual que el orden en <palette-history>)
+    List<HistorialPaleta> findAllByOrderByFechaCreacionDescIdDesc();
+}
+
+
+================================================================================
+6. CONTROLADOR REST (HistorialPaletaController.java)
+================================================================================
+
+package com.paletly.backend.controller;
+
+import com.paletly.backend.dto.PaletaDTO;
+import com.paletly.backend.model.HistorialPaleta;
+import com.paletly.backend.repository.HistorialPaletaRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/historial")
+@CrossOrigin(origins = "*")
+public class HistorialPaletaController {
+
+    private final HistorialPaletaRepository repository;
+
+    public HistorialPaletaController(HistorialPaletaRepository repository) {
+        this.repository = repository;
+    }
+
+    // GET /api/historial -> Devuelve una lista de arrays de 4 colores: [["#...", ...], ...]
+    @GetMapping
+    public List<List<String>> obtenerHistorial() {
+        return repository.findAllByOrderByFechaCreacionDescIdDesc()
+                .stream()
+                .map(p -> List.of(p.getColor1(), p.getColor2(), p.getColor3(), p.getColor4()))
+                .toList();
+    }
+
+    // POST /api/historial -> Guarda una paleta nueva de 4 colores
+    @PostMapping
+    public ResponseEntity<?> guardarPaleta(@RequestBody PaletaDTO dto) {
+        if (dto == null || dto.colores() == null || dto.colores().size() != 4) {
+            return ResponseEntity.badRequest().body("Se requieren exactamente 4 colores hexadecimales.");
+        }
+
+        List<String> c = dto.colores().stream()
+                .map(color -> color.trim().toUpperCase())
+                .toList();
+
+        boolean formatoValido = c.stream().allMatch(color -> color.matches("^#[0-9A-F]{6}$"));
+        if (!formatoValido) {
+            return ResponseEntity.badRequest().body("Todos los colores deben tener formato #RRGGBB.");
+        }
+
+        HistorialPaleta entidad = new HistorialPaleta(c.get(0), c.get(1), c.get(2), c.get(3));
+        repository.save(entidad);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new PaletaDTO(c));
+    }
+}

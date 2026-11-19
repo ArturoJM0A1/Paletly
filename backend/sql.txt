@@ -1,0 +1,40 @@
+1. SCRIPT SQL SERVER (DDL)
+
+CREATE DATABASE PaletlyDB;
+GO
+
+USE PaletlyDB;
+GO
+
+CREATE TABLE HistorialPaletas (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Color1 CHAR(7) NOT NULL,
+    Color2 CHAR(7) NOT NULL,
+    Color3 CHAR(7) NOT NULL,
+    Color4 CHAR(7) NOT NULL,
+    FechaCreacion DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    
+    CONSTRAINT CK_Color1_Hex CHECK (Color1 LIKE '#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]'),
+    CONSTRAINT CK_Color2_Hex CHECK (Color2 LIKE '#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]'),
+    CONSTRAINT CK_Color3_Hex CHECK (Color3 LIKE '#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]'),
+    CONSTRAINT CK_Color4_Hex CHECK (Color4 LIKE '#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]')
+);
+GO
+
+CREATE INDEX IX_HistorialPaletas_FechaCreacion 
+ON HistorialPaletas (FechaCreacion DESC);
+GO
+
+
+================================================================================
+2. CONFIGURACIÓN (application.properties)
+================================================================================
+
+spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=PaletlyDB;encrypt=true;trustServerCertificate=true
+spring.datasource.username=sa
+spring.datasource.password=TuPasswordSeguro123
+spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.SQLServerDialect
+
