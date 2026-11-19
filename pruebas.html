@@ -210,14 +210,14 @@
     async function ejecutarPruebas() {
       // ---------- Registro y generador de paletas ----------
       await probar("Los seis componentes están registrados con customElements.define()", () => {
-        ["app-dashboard", "generador-paletas", "historial-paletas", "reloj-usuario", "mapa-ubicacion-usuario", "bbva-web-component"]
+        ["app-panel-control", "generador-paletas", "historial-paletas", "reloj-usuario", "mapa-ubicacion-usuario", "bbva-componente"]
           .forEach((etiqueta) =>
             afirmar(!!customElements.get(etiqueta), `falta el registro de <${etiqueta}>`)
           );
       });
 
-      await probar("<bbva-web-component> pinta el logo BBVA con los 4 colores de la paleta que recibe", async () => {
-        const bbva = await montar("bbva-web-component"); // instancia + updateComplete
+      await probar("<bbva-componente> pinta el logo BBVA con los 4 colores de la paleta que recibe", async () => {
+        const bbva = await montar("bbva-componente"); // instancia + updateComplete
 
         // El logo debe estar pintado dentro de su Shadow DOM
         const span = bbva.shadowRoot.querySelector("h1 span");
@@ -282,8 +282,8 @@
       });
 
       // ---------- Historial de paletas ----------
-      await probar("app-dashboard guarda los 4 valores de cada paleta en el historial", async () => {
-        const panel = await montar("app-dashboard");
+      await probar("app-panel-control guarda los 4 valores de cada paleta en el historial", async () => {
+        const panel = await montar("app-panel-control");
         const colores = ["#111111", "#222222", "#333333", "#444444"];
         const referenciaAntes = panel.historial;
 
@@ -368,7 +368,7 @@
         geolocalizacionSimulada = {
           getCurrentPosition: (correcto, error) => error({ code: 1, message: "Denegado" })
         };
-        const panel = await montar("app-dashboard");
+        const panel = await montar("app-panel-control");
         await ceder();
 
         afirmarIgual(panel.estado, "error", "estado");
@@ -388,7 +388,7 @@
 
       await probar("Si el navegador no admite geolocalización se avisa", async () => {
         geolocalizacionSimulada = undefined; // como si faltara la API
-        const panel = await montar("app-dashboard");
+        const panel = await montar("app-panel-control");
         await ceder();
 
         afirmarIgual(panel.estado, "error", "estado");
@@ -403,7 +403,7 @@
           getCurrentPosition: (correcto) =>
             correcto({ coords: { latitude: 19.4326, longitude: -99.1332 } })
         };
-        const panel = await montar("app-dashboard");
+        const panel = await montar("app-panel-control");
         await ceder();
 
         afirmarIgual(panel.estado, "ok", "estado");
@@ -418,7 +418,7 @@
         geolocalizacionSimulada = {
           getCurrentPosition: (correcto, error) => { llamadas++; error({ code: 3, message: "tiempo agotado" }); }
         };
-        const panel = await montar("app-dashboard");
+        const panel = await montar("app-panel-control");
         await ceder();
         await esperarActualizacion(panel);
 

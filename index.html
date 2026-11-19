@@ -89,7 +89,7 @@
          TÍTULO CON LOS 4 COLORES DE LA PALETA ACTIVA
          ---------------------------------------------------------
          Mismo truco que el logotipo: el color vive en las variables
-         CSS --paleta-1..4 que publica <app-dashboard>.
+         CSS --paleta-1..4 que publica <app-panel-control>.
          · background-image → degradado con los 4 colores actuales
          · background-clip:text → recorta el degradado a LAS LETRAS
          · color: transparent → deja ver el degradado (si no, el
@@ -132,7 +132,7 @@
        ---------------------------------------------------------
        Div cuadrado recortado con clip-path: polygon(...).
        El color NO va en esta regla: usa las variables CSS
-       --paleta-1..4, que <app-dashboard> publica sobre <html> cada
+       --paleta-1..4, que <app-panel-control> publica sobre <html> cada
        vez que cambia la paleta. Así el logotipo se recolorea solo,
        sin que nadie manipule su nodo (está en el HTML principal,
        fuera de todo Shadow DOM, por eso no puede recibir
@@ -217,7 +217,7 @@
     </header>
 
     <!-- Componente principal: administra el estado compartido. -->
-    <app-dashboard></app-dashboard>
+    <app-panel-control></app-panel-control>
 
     <footer class="pie">
       Hecho con cafeína · Arturo Juárez Monroy ·

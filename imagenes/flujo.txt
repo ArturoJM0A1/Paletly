@@ -27,8 +27,8 @@ características de Web Components y LitElement se emplean en ella.
     historial-paletas.js    → <historial-paletas>     historial de paletas
     reloj-usuario.js         → <reloj-usuario>          reloj + zona horaria
     mapa-ubicacion-usuario.js  → <mapa-ubicacion-usuario>   mapa Leaflet + RxJS
-    bbva-web-component.js → <bbva-web-component>  logo BBVA con paleta
-    app-dashboard.js      → <app-dashboard>       panel principal
+    bbva-componente.js → <bbva-componente>  logo BBVA con paleta
+    app-panel-control.js      → <app-panel-control>       panel principal
 
   pruebas.html→ 17 pruebas unitarias nativas (sin Jest/Mocha/Vitest) que
                 importan ./app.js y prueban exactamente el mismo código
@@ -36,12 +36,12 @@ características de Web Components y LitElement se emplean en ella.
 
 Los 6 componentes:
 
-  <app-dashboard>       Panel principal: estado general y coordinación
+  <app-panel-control>       Panel principal: estado general y coordinación
   <generador-paletas>   Generador de 4 colores aleatorios
   <historial-paletas>     Historial de paletas generadas
   <reloj-usuario>          Reloj en vivo con zona horaria
   <mapa-ubicacion-usuario>   Mapa OpenStreetMap (Leaflet) con la ubicación
-  <bbva-web-component>  Ejemplo BBVA adaptado: logo + mensaje que cambia
+  <bbva-componente>  Ejemplo BBVA adaptado: logo + mensaje que cambia
                         de color según la paleta activa
 
 Dependencias (todas desde CDN, sin build ni package.json):
@@ -62,7 +62,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
       su customElements.define() y el navegador convierte cada
       etiqueta en un objeto.
 
-  [2] Arranque del <app-dashboard> (el componente "madre")
+  [2] Arranque del <app-panel-control> (el componente "madre")
       · constructor() → inicializa el estado: paleta de 4 colores,
         historial vacío, coordenadas null, estado "cargando".
       · firstUpdated() → publica la paleta inicial como variables CSS
@@ -76,14 +76,14 @@ Dependencias (todas desde CDN, sin build ni package.json):
       · <generador-paletas> genera 4 colores #RRGGBB aleatorios.
       · Emite el evento "paleta-cambio" (bubbles + composed) con los 4
         colores en detail; el evento SALE del Shadow DOM.
-      · <app-dashboard> lo escucha, guarda los 4 valores en el historial
+      · <app-panel-control> lo escucha, guarda los 4 valores en el historial
         (creando un array nuevo, sin mutar el anterior) y actualiza la
         paleta compartida.
       · Lit detecta el cambio de propiedad → vuelve a ejecutar render()
         solo en lo necesario → se actualizan hijos, historial y estado.
       · updated() publica la nueva paleta como variables CSS → el
         logotipo del encabezado cambia de color con una transición.
-      · <bbva-web-component> también se recolorea: recibe los 4
+      · <bbva-componente> también se recolorea: recibe los 4
         colores por PROPIEDAD (.paleta) y pinta su logo BBVA con un
         degradado nuevo en cada paleta generada.
 
@@ -117,7 +117,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
         destruido (fuga de memoria).
 
   [7] Historial
-      <app-dashboard> alimenta a <historial-paletas> con el array de
+      <app-panel-control> alimenta a <historial-paletas> con el array de
       paletas; este pinta la más reciente primero, la numera en orden
       inverso y muestra el contador en singular/plural (o el estado
       vacío si aún no hay paletas).
@@ -156,7 +156,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
         document. Es la vía de comunicación de HIJO → PADRE.
 
   · Comunicación por propiedades (PADRE → HIJO)
-        <app-dashboard> pasa datos a sus hijos escribiendo propiedades
+        <app-panel-control> pasa datos a sus hijos escribiendo propiedades
         (this.paleta, this.historial, this.aviso...). Lit las vuelve
         a pintar automáticamente al cambiar.
 
@@ -235,7 +235,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
     paleta-cambio (bubbles/composed hasta document), historial,
     reloj (formato y clearInterval), geolocalización (los 3 errores
     + éxito + reintento + precisión), mapa (guards sin librería,
-    aviso con ?oculto) y <bbva-web-component> (los 4 colores de la
+    aviso con ?oculto) y <bbva-componente> (los 4 colores de la
     paleta pintados en el logo BBVA).
 
   Resultado: 17 correctas · 0 fallidas · ¡todo en verde!
@@ -250,14 +250,14 @@ Dependencias (todas desde CDN, sin build ni package.json):
 ──────────────────────────────────────────────────────────────────────────────
 
   HIJO → PADRE   por EVENTOS con bubbles + composed
-                 (generador-paletas → app-dashboard: "paleta-cambio")
+                 (generador-paletas → app-panel-control: "paleta-cambio")
 
   PADRE → HIJO   por PROPIEDADES reactivas
-                 (app-dashboard → historial-paletas: historial, paleta
-                  app-dashboard → bbva-web-component: paleta)
+                 (app-panel-control → historial-paletas: historial, paleta
+                  app-panel-control → bbva-componente: paleta)
 
   HIJO → FUERA   por variables CSS heredadas
-                 (app-dashboard → logotipo del documento: --paleta-N)
+                 (app-panel-control → logotipo del documento: --paleta-N)
 
   Este patrón unidireccional, más la reactividad de Lit, es lo que
   mantiene el estado siempre coherente: un solo origen de verdad

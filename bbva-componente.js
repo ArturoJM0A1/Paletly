@@ -1,4 +1,4 @@
-// Archivo: bbva-web-component.js — componente <bbva-web-component> de Paletly.
+// Archivo: bbva-componente.js — componente <bbva-componente> de Paletly.
 // Extraído de app.js (ahora hay UN archivo por componente) para
 // facilitar su estudio: el código del componente es IDÉNTICO al
 // original; solo cambia que los imports viven ahora en este archivo.
@@ -9,12 +9,12 @@
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 
 // =========================================================
-// 5) <bbva-web-component>
+// 5) <bbva-componente>
 //    Componente adaptado del ejemplo de BBVA que se pidió
 //    incorporar a la aplicación.
 //    Responsabilidad: mostrar el logo "BBVA" junto a un mensaje
 //    y RECOLOREARSE con la paleta activa que le envía
-//    <app-dashboard> mediante Property Binding (.paleta).
+//    <app-panel-control> mediante Property Binding (.paleta).
 //
 //    Adaptaciones respecto al código original que se entregó:
 //    · import → el original importaba del paquete npm 'lit-element'
@@ -46,7 +46,7 @@ class BbvaWebComponent extends LitElement {
     /* El host (la etiqueta) ocupa toda la fila de la rejilla */
     :host { display: block; height: 100%; }
 
-    /* Respaldo por atributo: <bbva-web-component ?oculto> lo oculta.
+    /* Respaldo por atributo: <bbva-componente ?oculto> lo oculta.
        Es el boolean binding ?atributo trabajando sobre el HOST. */
     :host([hidden]) { display: none; }
 
@@ -83,7 +83,7 @@ class BbvaWebComponent extends LitElement {
          ---------------------------------------------------------
          Las variables CSS HEREDAN hasta dentro del Shadow DOM
          (a diferencia de los selectores, que NO entran aquí).
-         La variable --paleta-1 la publica <app-dashboard> sobre
+         La variable --paleta-1 la publica <app-panel-control> sobre
          <html> con setProperty(): por eso este título también
          se recolorea solo cuando cambia la paleta.
          rgb(37, 37, 38) es el color fijo del original (respaldo).
@@ -135,7 +135,7 @@ class BbvaWebComponent extends LitElement {
   }
 
   render() {
-    // Los 4 colores llegan desde <app-dashboard> con .paleta=${...}.
+    // Los 4 colores llegan desde <app-panel-control> con .paleta=${...}.
     // Si todavía no hay paleta completa, se usan los azules por
     // defecto para que el logo nunca quede sin color.
     const [c1, c2, c3, c4] =
@@ -174,5 +174,5 @@ class BbvaWebComponent extends LitElement {
   }
 }
 
-// REGISTRO del componente: a partir de aquí existe la etiqueta <bbva-web-component>.
-customElements.define("bbva-web-component", BbvaWebComponent);
+// REGISTRO del componente: a partir de aquí existe la etiqueta <bbva-componente>.
+customElements.define("bbva-componente", BbvaWebComponent);

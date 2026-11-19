@@ -9,7 +9,7 @@ import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 // 2) <historial-paletas>
 //    Responsabilidad: mostrar el registro de todas las paletas
 //    generadas (4 valores por cada cambio). No guarda estado propio:
-//    recibe el historial desde <app-dashboard> mediante una propiedad
+//    recibe el historial desde <app-panel-control> mediante una propiedad
 //    reactiva, siguiendo el patrón de datos "hacia abajo" del proyecto.
 // =========================================================
 class HistorialPaletas extends LitElement {

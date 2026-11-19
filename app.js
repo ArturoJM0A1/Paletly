@@ -15,8 +15,8 @@
 //   historial-paletas.js     → <historial-paletas>     historial de paletas
 //   reloj-usuario.js          → <reloj-usuario>          reloj + zona horaria
 //   mapa-ubicacion-usuario.js   → <mapa-ubicacion-usuario>   mapa Leaflet + RxJS
-//   bbva-web-component.js  → <bbva-web-component>  logo BBVA con paleta
-//   app-dashboard.js       → <app-dashboard>       panel principal
+//   bbva-componente.js  → <bbva-componente>  logo BBVA con paleta
+//   app-panel-control.js       → <app-panel-control>       panel principal
 //   pruebas.html           → 17 pruebas (importan este mismo app.js)
 //
 // Conceptos base del proyecto (aplicados en los 6 archivos):
@@ -31,7 +31,7 @@
 
 // Los imports estáticos de ESM se ejecutan ANTES de que el navegador
 // procese el HTML (los módulos se diferían por defecto), así que
-// cuando <app-dashboard> se monta, todos los customElements.define()
+// cuando <app-panel-control> se monta, todos los customElements.define()
 // ya se han ejecutado y el navegador puede instanciar cada etiqueta.
 //
 // Cada archivo importa Lit de la MISMA URL del CDN: el navegador
@@ -41,5 +41,5 @@ import "./generador-paletas.js"; //genera colores
 import "./historial-paletas.js"; //historial de paletas
 import "./reloj-usuario.js"; //hora
 import "./mapa-ubicacion-usuario.js"; //mapa
-import "./bbva-web-component.js"; //logo BBVA
-import "./app-dashboard.js"; //Componente padre, cordinador
+import "./bbva-componente.js"; //logo BBVA
+import "./app-panel-control.js"; //Componente padre, cordinador

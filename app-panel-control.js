@@ -1,4 +1,4 @@
-// Archivo: app-dashboard.js — componente <app-dashboard> de Paletly.
+// Archivo: app-panel-control.js — componente <app-panel-control> de Paletly.
 // Extraído de app.js (ahora hay UN archivo por componente) para
 // facilitar su estudio: el código del componente es IDÉNTICO al
 // original; solo cambia que los imports viven ahora en este archivo.
@@ -9,7 +9,7 @@
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 
 // =========================================================
-// 6) <app-dashboard>
+// 6) <app-panel-control>
 //    Responsabilidad: estado general y coordinación.
 //    Escucha los eventos de sus hijos y les pasa datos por propiedades.
 // =========================================================
@@ -35,7 +35,7 @@ class PanelPrincipal extends LitElement {
     /* CSS Grid: las tarjetas en dos columnas y el mapa a lo ancho.
        Con minmax(340px, 1fr) y un contenedor de 1040px caben siempre
        dos columnas de ~509px; en móvil pasa a una sola columna.
-       Al añadir <bbva-web-component> la rejilla reparte sola el
+       Al añadir <bbva-componente> la rejilla reparte sola el
        hueco extra (auto-fit), sin que haya que tocar este CSS. */
     .rejilla {
       display: grid;
@@ -278,7 +278,7 @@ class PanelPrincipal extends LitElement {
           debe escribir el símbolo de interpolación seguido de
           llaves, porque Lit lo trataría como código y fallaría.)
         -->
-        <bbva-web-component .paleta=${this.paleta}></bbva-web-component>
+        <bbva-componente .paleta=${this.paleta}></bbva-componente>
 
         <!-- Estado compartido (ubicación + zona horaria + paleta activa) -->
         <section class="estado">
@@ -322,4 +322,4 @@ class PanelPrincipal extends LitElement {
 }
 
 // REGISTRO del componente principal.
-customElements.define("app-dashboard", PanelPrincipal);
+customElements.define("app-panel-control", PanelPrincipal);
