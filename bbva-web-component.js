@@ -116,14 +116,20 @@ class BbvaWebComponent extends LitElement {
       line-height: 1.5;
       word-break: break-all;
     }
+
+    /* Icono de cells en clippath: se pinta con el degradado de la paleta activa */
+    .cellsicon {
+    width: 40px;
+    height: 40px;
+    clip-path: polygon(69.71% 0%, 80.46% 0.64%, 88.6% 4.82%, 94.79% 11.9%, 98.05% 22.51%, 96.42% 32.8%, 76.87% 75.56%, 67.43% 87.14%, 53.42% 94.86%, 45.6% 96.46%, 35.83% 96.46%, 21.17% 91.96%, 10.1% 83.28%, 5.54% 77.17%, 1.63% 68.81%, 0% 60.77%, 0% 51.77%, 8.14% 53.7%, 8.14% 53.7%, 9.45% 65.59%, 15.31% 76.53%, 23.45% 83.6%, 33.88% 87.78%, 47.56% 87.78%, 59.93% 82.32%, 68.4% 73.31%, 87.3% 32.8%, 89.58% 25.4%, 88.93% 19.29%, 81.11% 20.9%, 81.11% 20.9%, 81.11% 27.33%, 76.55% 31.83%, 70.36% 31.83%, 65.8% 27.97%, 65.8% 20.26%, 71.01% 16.08%, 76.55% 16.4%, 81.11% 20.9%, 88.93% 19.29%, 85.34% 13.18%, 78.18% 8.68%, 71.99% 8.04%, 64.5% 10.29%, 25.08% 27.97%, 28.99% 34.73%, 28.99% 34.73%, 37.13% 32.15%, 46.25% 32.48%, 55.37% 36.66%, 45.28% 49.52%, 45.28% 49.52%, 40.07% 48.23%, 36.16% 49.52%, 33.88% 51.77%, 32.57% 57.23%, 36.16% 63.02%, 41.69% 64.31%, 47.56% 60.77%, 48.86% 55.63%, 47.56% 51.77%, 45.28% 49.52%, 55.37% 36.66%, 61.56% 43.09%, 64.82% 50.8%, 65.15% 60.13%, 60.91% 70.42%, 55.05% 76.21%, 46.25% 80.06%, 36.81% 80.39%, 28.01% 77.17%, 20.52% 70.42%, 16.61% 61.74%, 16.61% 50.8%, 20.85% 41.8%, 28.99% 34.73%, 25.08% 27.97%, 20.2% 31.19%, 12.38% 40.19%, 8.14% 53.7%, 0% 51.77%, 1.63% 43.73%, 4.89% 36.33%, 14.01% 25.4%, 21.17% 20.58%, 63.52% 1.61%);
+    display: inline-block;
+    margin-left: 8px;
   `;
 
   // CONSTRUCTOR: se ejecuta al crear cada instancia de la etiqueta.
   constructor() {
     super(); // obligatorio: llama al constructor de LitElement (herencia)
-    // Mensaje por defecto: el original decía 'use Web Components 🚀HJ'
-    // (la "HJ" eran teclas sobrantes); se limpia el texto.
-    this.message = "Use Web Components 🚀";
+    this.message = "Web Components";
     // Estado inicial: aún sin paleta; la pinta el dashboard al montarse.
     this.paleta = [];
   }
@@ -155,7 +161,8 @@ class BbvaWebComponent extends LitElement {
         -->
         <h1>
           <span style="background-color: ${c1}; background-image: ${degradado}">BBVA</span>
-          ${this.message}
+          <div class="cellsicon" style="background-image: ${degradado};"></div>
+          ${this.message} 
         </h1>
 
         <!-- Interpolación + join(): los colores recibidos en texto -->
