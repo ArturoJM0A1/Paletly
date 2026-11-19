@@ -15,9 +15,20 @@ características de Web Components y LitElement se emplean en ella.
                 barra de scroll de 3 px, logotipo con clip-path).
                 Enlaza app.js y da enlace a las pruebas.
 
-  app.js      → Módulo ESM con los 6 componentes (único código fuente).
-                Importado por index.html (la app) y por pruebas.html
-                (las pruebas), así el código se escribe UNA sola vez.
+  app.js      → Punto de entrada ESM (sin build): solo explica la
+                estructura y hace los imports de los 6 archivos de
+                componentes. Importado por index.html (la app) y por
+                pruebas.html (las pruebas), así el código se escribe
+                UNA sola vez.
+
+  Un archivo por componente (código IDÉNTICO al que vivía en app.js,
+  ahora separado para estudiarlo por partes):
+    palette-generator.js  → <palette-generator>   generador aleatorio
+    palette-history.js    → <palette-history>     historial de paletas
+    user-clock.js         → <user-clock>          reloj + zona horaria
+    user-location-map.js  → <user-location-map>   mapa Leaflet + RxJS
+    bbva-web-component.js → <bbva-web-component>  logo BBVA con paleta
+    app-dashboard.js      → <app-dashboard>       panel principal
 
   pruebas.html→ 17 pruebas unitarias nativas (sin Jest/Mocha/Vitest) que
                 importan ./app.js y prueban exactamente el mismo código
@@ -35,7 +46,7 @@ Los 6 componentes:
 
 Dependencias (todas desde CDN, sin build ni package.json):
 
-  Lit 3         → motor de Web Components reactivos (app.js)
+  Lit 3         → motor de Web Components reactivos (los 6 archivos .js)
   Leaflet 1.9.4 → mapa de OpenStreetMap, sin clave de API
   RxJS 7        → programación reactiva: el intervalo de 7 s que
                   alterna la forma del mapa (círculo ↔ cuadrado)
@@ -47,8 +58,9 @@ Dependencias (todas desde CDN, sin build ni package.json):
 
   [1] Carga de la página
       index.html carga Leaflet (defer) y app.js (módulo ESM).
-      app.js ejecuta customElements.define() para registrar los 6
-      componentes; el navegador convierte cada etiqueta en un objeto.
+      app.js importa los 6 archivos de componentes; cada uno ejecuta
+      su customElements.define() y el navegador convierte cada
+      etiqueta en un objeto.
 
   [2] Arranque del <app-dashboard> (el componente "madre")
       · constructor() → inicializa el estado: paleta de 4 colores,

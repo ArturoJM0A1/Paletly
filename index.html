@@ -226,8 +226,9 @@
   </main>
 
   <!--
-    El código de los seis componentes vive en app.js (módulo ESM, sin build)
-    para poder reutilizarlo desde la página de pruebas.
+    El código de los seis componentes vive en SEIS archivos .js (uno por
+    componente) que importa app.js (módulo ESM, sin build), para poder
+    reutilizarlo desde la página de pruebas con una sola importación.
   -->
   <script type="module" src="./app.js"></script>
 </body>
