@@ -11,14 +11,51 @@ Aplicación web minimalista construida con **Web Components** y **Lit**, con dis
 * **Dashboard principal**: Coordina el estado global de la aplicación.
 * **Componente BBVA**: `<bbva-web-component>` (adaptado del ejemplo de BBVA) que recibe la paleta activa por propiedades y se recolorea con sus 4 colores.
 
-## Tecnologías
+## 🧩 Componentes del proyecto
 
-* [Lit](https://lit.dev/) (v3)
-* [Leaflet](https://leafletjs.com/) & OpenStreetMap
-* Web Components nativos (Custom Elements, Shadow DOM)
-* CSS Moderno (Glassmorphism, CSS Grid)
+La aplicación se divide en seis componentes encapsulados en su propio Shadow DOM:
+
+1. **`<app-dashboard>` (`app-dashboard.js`)**: Componente orquestador. Administra el estado global compartido (paleta activa, historial, coordenadas de geolocalización y zona horaria) y coordina a sus componentes hijos.
+2. **`<palette-generator>` (`palette-generator.js`)**: Genera aleatoriamente cuatro códigos hexadecimales (`#RRGGBB`) al montarse o al pulsar su botón.
+3. **`<palette-history>` (`palette-history.js`)**: Renderiza la lista cronológica inversa de todas las paletas generadas junto con sus códigos hexadecimales.
+4. **`<user-clock>` (`user-clock.js`)**: Muestra la hora local en formato de 24 horas (actualizada cada segundo) y detecta la zona horaria del navegador mediante `Intl.DateTimeFormat`.
+5. **`<user-location-map>` (`user-location-map.js`)**: Dibuja un mapa interactivo con **Leaflet** y OpenStreetMap centrado en la ubicación del usuario. Usa **RxJS** (`interval`) para alternar cada 7 segundos entre un círculo y un cuadrado de 500 m coloreados con la paleta activa.
+6. **`<bbva-web-component>` (`bbva-web-component.js`)**: Componente de identidad visual que adapta dinámicamente el degradado de su logotipo e icono con los 4 colores de la paleta vigente.
+
+---
+
+## 🔄 Arquitectura de comunicación
+
+El flujo de datos sigue el patrón estándar de **datos hacia abajo y eventos hacia arriba** (*Data Down, Events Up*), además de un puente de estilos para el documento exterior:
+
+### 1. Eventos hacia arriba (`CustomEvent`)
+Los componentes hijos notifican cambios de estado al padre atravesando la frontera del Shadow DOM mediante eventos con `bubbles: true` y `composed: true`:
+* **`paleta-cambio`**: Emitido por `<palette-generator>` con `detail: { colores }`. `<app-dashboard>` lo captura para actualizar la paleta activa y añadir una copia al historial.
+* **`zona-horaria`**: Emitido por `<user-clock>` al montarse con `detail: { zona }`. `<app-dashboard>` lo captura para mostrarlo en el panel de estado.
+
+### 2. Propiedades hacia abajo (*Property Binding*)
+`<app-dashboard>` mantiene la única fuente de verdad y distribuye los datos reactivos hacia sus hijos usando la sintaxis `.propiedad=${valor}` de Lit:
+* `.historial` $\rightarrow$ `<palette-history>`
+* `.paleta` $\rightarrow$ `<bbva-web-component>` y `<user-location-map>`
+* `.latitud`, `.longitud`, `.aviso` $\rightarrow$ `<user-location-map>`
+
+### 3. Variables CSS hacia el documento global
+Dado que el encabezado y el logotipo de `index.html` viven **fuera** del Shadow DOM de `<app-dashboard>`, el panel publica los 4 colores actuales en `:root` (`--paleta-1` a `--paleta-4`) mediante `document.documentElement.style.setProperty()`. De este modo, el título y el logotipo exterior se recolorean automáticamente sin manipular el DOM directamente.
+
+---
 
 ## Uso rápido
 
 1. Descarga el repositorio.
 2. Abre `index.html` directamente en tu navegador o mediante un servidor local.
+
+## 🚀 Ejecución y pruebas
+
+Para evitar restricciones de CORS con módulos ESM, sirve la carpeta con un servidor local:
+
+```bash
+npx serve -l 4173 .
+```
+
+* **Aplicación:** `http://localhost:4173/index.html`
+* **Pruebas unitarias nativas (17 tests):** `http://localhost:4173/pruebas.html`
