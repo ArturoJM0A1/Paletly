@@ -210,7 +210,7 @@
     async function ejecutarPruebas() {
       // ---------- Registro y generador de paletas ----------
       await probar("Los seis componentes están registrados con customElements.define()", () => {
-        ["app-dashboard", "palette-generator", "palette-history", "user-clock", "user-location-map", "bbva-web-component"]
+        ["app-dashboard", "generador-paletas", "historial-paletas", "reloj-usuario", "user-location-map", "bbva-web-component"]
           .forEach((etiqueta) =>
             afirmar(!!customElements.get(etiqueta), `falta el registro de <${etiqueta}>`)
           );
@@ -243,7 +243,7 @@
       });
 
       await probar("colorAleatorio() devuelve colores hexadecimales #RRGGBB en mayúsculas", () => {
-        const generador = document.createElement("palette-generator");
+        const generador = document.createElement("generador-paletas");
         // 50 muestras para cubrir buena parte del rango de Math.random()
         for (let intento = 0; intento < 50; intento++) {
           const color = generador.colorAleatorio();
@@ -254,7 +254,7 @@
 
       await probar("generarPaleta() produce exactamente 4 colores válidos", () => {
         // Se puede invocar SIN montar el componente: no depende del DOM
-        const generador = document.createElement("palette-generator");
+        const generador = document.createElement("generador-paletas");
         generador.generarPaleta(); // se puede invocar sin estar conectado
         afirmarIgual(generador.paleta.length, 4, "cantidad de colores");
         generador.paleta.forEach((color) =>
@@ -263,7 +263,7 @@
       });
 
       await probar("El botón emite 'paleta-cambio' con 4 colores, bubbles y composed", async () => {
-        const generador = await montar("palette-generator");
+        const generador = await montar("generador-paletas");
 
         let eventoRecibido = null;
         // El oyente vive en el DOCUMENTO: si el evento llega hasta aquí es que
@@ -287,7 +287,7 @@
         const colores = ["#111111", "#222222", "#333333", "#444444"];
         const referenciaAntes = panel.historial;
 
-        // Se simula el mismo CustomEvent que emite <palette-generator>
+        // Se simula el mismo CustomEvent que emite <generador-paletas>
         panel.dispatchEvent(
           new CustomEvent("paleta-cambio", {
             detail: { colores },
@@ -305,8 +305,8 @@
         desmontar(panel);
       });
 
-      await probar("<palette-history> pinta primero la más reciente y la numera en orden", async () => {
-        const historial = await montar("palette-history");
+      await probar("<historial-paletas> pinta primero la más reciente y la numera en orden", async () => {
+        const historial = await montar("historial-paletas");
         historial.historial = [
           ["#AAAAAA", "#BBBBBB", "#CCCCCC", "#DDDDDD"], // índice 0 → más reciente
           ["#111111", "#222222", "#333333", "#444444"]
@@ -324,8 +324,8 @@
         desmontar(historial);
       });
 
-      await probar("<palette-history> muestra el estado vacío y el contador en singular", async () => {
-        const historial = await montar("palette-history");
+      await probar("<historial-paletas> muestra el estado vacío y el contador en singular", async () => {
+        const historial = await montar("historial-paletas");
         // Sin paletas: el constructor deja historial = []
         afirmar(raizTexto(historial, ".vacio"), "debería mostrarse el estado vacío");
 
@@ -340,10 +340,10 @@
       });
 
       // ---------- Reloj ----------
-      await probar("<user-clock> muestra la hora en formato 24 h con su zona horaria", async () => {
+      await probar("<reloj-usuario> muestra la hora en formato 24 h con su zona horaria", async () => {
         // Se monta el reloj y se comprueba el estado reactivo (hora, zona)
         // y que Lit haya pintado la hora dentro de su Shadow DOM.
-        const reloj = await montar("user-clock");
+        const reloj = await montar("reloj-usuario");
         afirmar(/^\d{2}:\d{2}:\d{2}$/.test(reloj.hora), `formato de hora inválido: ${reloj.hora}`);
         afirmarIgual(reloj.zonaHoraria, Intl.DateTimeFormat().resolvedOptions().timeZone, "zona horaria");
         // La hora también debe aparecer pintada dentro del Shadow DOM
@@ -351,8 +351,8 @@
         desmontar(reloj);
       });
 
-      await probar("<user-clock> deja de avanzar al desconectarse (clearInterval)", async () => {
-        const reloj = await montar("user-clock");
+      await probar("<reloj-usuario> deja de avanzar al desconectarse (clearInterval)", async () => {
+        const reloj = await montar("reloj-usuario");
         await new Promise((resolver) => setTimeout(resolver, 1100)); // un segundo en marcha
         const horaConectado = reloj.hora;
 

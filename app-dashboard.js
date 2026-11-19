@@ -261,13 +261,13 @@ class PanelPrincipal extends LitElement {
     return html`
       <div class="rejilla">
         <!-- Fuente de la paleta: al generar avisa con "paleta-cambio" -->
-        <palette-generator></palette-generator>
+        <generador-paletas></generador-paletas>
 
         <!-- Historial: recibe el registro por propiedad (.historial) -->
-        <palette-history .historial=${this.historial}></palette-history>
+        <historial-paletas .historial=${this.historial}></historial-paletas>
 
         <!-- Hijo independiente: detecta y muestra su propia hora local -->
-        <user-clock></user-clock>
+        <reloj-usuario></reloj-usuario>
 
         <!--
           Componente BBVA adaptado: recibe la paleta ACTIVA por

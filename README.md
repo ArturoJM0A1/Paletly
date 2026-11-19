@@ -16,9 +16,9 @@ Aplicación web minimalista construida con **Web Components** y **Lit**, con dis
 La aplicación se divide en seis componentes encapsulados en su propio Shadow DOM:
 
 1. **`<app-dashboard>` (`app-dashboard.js`)**: Componente orquestador. Administra el estado global compartido (paleta activa, historial, coordenadas de geolocalización y zona horaria) y coordina a sus componentes hijos.
-2. **`<palette-generator>` (`palette-generator.js`)**: Genera aleatoriamente cuatro códigos hexadecimales (`#RRGGBB`) al montarse o al pulsar su botón.
-3. **`<palette-history>` (`palette-history.js`)**: Renderiza la lista cronológica inversa de todas las paletas generadas junto con sus códigos hexadecimales.
-4. **`<user-clock>` (`user-clock.js`)**: Muestra la hora local en formato de 24 horas (actualizada cada segundo) y detecta la zona horaria del navegador mediante `Intl.DateTimeFormat`.
+2. **`<generador-paletas>` (`generador-paletas.js`)**: Genera aleatoriamente cuatro códigos hexadecimales (`#RRGGBB`) al montarse o al pulsar su botón.
+3. **`<historial-paletas>` (`historial-paletas.js`)**: Renderiza la lista cronológica inversa de todas las paletas generadas junto con sus códigos hexadecimales.
+4. **`<reloj-usuario>` (`reloj-usuario.js`)**: Muestra la hora local en formato de 24 horas (actualizada cada segundo) y detecta la zona horaria del navegador mediante `Intl.DateTimeFormat`.
 5. **`<user-location-map>` (`user-location-map.js`)**: Dibuja un mapa interactivo con **Leaflet** y OpenStreetMap centrado en la ubicación del usuario. Usa **RxJS** (`interval`) para alternar cada 7 segundos entre un círculo y un cuadrado de 500 m coloreados con la paleta activa.
 6. **`<bbva-web-component>` (`bbva-web-component.js`)**: Componente de identidad visual que adapta dinámicamente el degradado de su logotipo e icono con los 4 colores de la paleta vigente.
 
@@ -30,12 +30,12 @@ El flujo de datos sigue el patrón estándar de **datos hacia abajo y eventos ha
 
 ### 1. Eventos hacia arriba (`CustomEvent`)
 Los componentes hijos notifican cambios de estado al padre atravesando la frontera del Shadow DOM mediante eventos con `bubbles: true` y `composed: true`:
-* **`paleta-cambio`**: Emitido por `<palette-generator>` con `detail: { colores }`. `<app-dashboard>` lo captura para actualizar la paleta activa y añadir una copia al historial.
-* **`zona-horaria`**: Emitido por `<user-clock>` al montarse con `detail: { zona }`. `<app-dashboard>` lo captura para mostrarlo en el panel de estado.
+* **`paleta-cambio`**: Emitido por `<generador-paletas>` con `detail: { colores }`. `<app-dashboard>` lo captura para actualizar la paleta activa y añadir una copia al historial.
+* **`zona-horaria`**: Emitido por `<reloj-usuario>` al montarse con `detail: { zona }`. `<app-dashboard>` lo captura para mostrarlo en el panel de estado.
 
 ### 2. Propiedades hacia abajo (*Property Binding*)
 `<app-dashboard>` mantiene la única fuente de verdad y distribuye los datos reactivos hacia sus hijos usando la sintaxis `.propiedad=${valor}` de Lit:
-* `.historial` $\rightarrow$ `<palette-history>`
+* `.historial` $\rightarrow$ `<historial-paletas>`
 * `.paleta` $\rightarrow$ `<bbva-web-component>` y `<user-location-map>`
 * `.latitud`, `.longitud`, `.aviso` $\rightarrow$ `<user-location-map>`
 

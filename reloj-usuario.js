@@ -1,4 +1,4 @@
-// Archivo: user-clock.js — componente <user-clock> de Paletly.
+// Archivo: reloj-usuario.js — componente <reloj-usuario> de Paletly.
 // Extraído de app.js (ahora hay UN archivo por componente) para
 // facilitar su estudio: el código del componente es IDÉNTICO al
 // original; solo cambia que los imports viven ahora en este archivo.
@@ -9,7 +9,7 @@
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 
 // =========================================================
-// 3) <user-clock>
+// 3) <reloj-usuario>
 //    Responsabilidad: hora local de 24 horas + zona horaria.
 // =========================================================
 class RelojUsuario extends LitElement {
@@ -130,5 +130,5 @@ class RelojUsuario extends LitElement {
   }
 }
 
-// REGISTRO del componente: existe la etiqueta <user-clock>.
-customElements.define("user-clock", RelojUsuario);
+// REGISTRO del componente: existe la etiqueta <reloj-usuario>.
+customElements.define("reloj-usuario", RelojUsuario);

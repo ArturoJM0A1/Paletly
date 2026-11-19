@@ -1,4 +1,4 @@
-// Archivo: palette-generator.js — componente <palette-generator> de Paletly.
+// Archivo: generador-paletas.js — componente <generador-paletas> de Paletly.
 // Extraído de app.js (ahora hay UN archivo por componente) para
 // facilitar su estudio: el código del componente es IDÉNTICO al
 // original; solo cambia que los imports viven ahora en este archivo.
@@ -9,7 +9,7 @@
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 
 // =========================================================
-// 1) <palette-generator>
+// 1) <generador-paletas>
 //    Responsabilidad: generar EXACTAMENTE cuatro colores hex
 //    aleatorios y avisar al exterior cuando cambian.
 // =========================================================
@@ -167,5 +167,5 @@ class GeneradorPaleta extends LitElement {
   }
 }
 
-// REGISTRO del componente: a partir de aquí existe la etiqueta <palette-generator>.
-customElements.define("palette-generator", GeneradorPaleta);
+// REGISTRO del componente: a partir de aquí existe la etiqueta <generador-paletas>.
+customElements.define("generador-paletas", GeneradorPaleta);

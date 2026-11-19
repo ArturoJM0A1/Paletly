@@ -23,9 +23,9 @@ características de Web Components y LitElement se emplean en ella.
 
   Un archivo por componente (código IDÉNTICO al que vivía en app.js,
   ahora separado para estudiarlo por partes):
-    palette-generator.js  → <palette-generator>   generador aleatorio
-    palette-history.js    → <palette-history>     historial de paletas
-    user-clock.js         → <user-clock>          reloj + zona horaria
+    generador-paletas.js  → <generador-paletas>   generador aleatorio
+    historial-paletas.js    → <historial-paletas>     historial de paletas
+    reloj-usuario.js         → <reloj-usuario>          reloj + zona horaria
     user-location-map.js  → <user-location-map>   mapa Leaflet + RxJS
     bbva-web-component.js → <bbva-web-component>  logo BBVA con paleta
     app-dashboard.js      → <app-dashboard>       panel principal
@@ -37,9 +37,9 @@ características de Web Components y LitElement se emplean en ella.
 Los 6 componentes:
 
   <app-dashboard>       Panel principal: estado general y coordinación
-  <palette-generator>   Generador de 4 colores aleatorios
-  <palette-history>     Historial de paletas generadas
-  <user-clock>          Reloj en vivo con zona horaria
+  <generador-paletas>   Generador de 4 colores aleatorios
+  <historial-paletas>     Historial de paletas generadas
+  <reloj-usuario>          Reloj en vivo con zona horaria
   <user-location-map>   Mapa OpenStreetMap (Leaflet) con la ubicación
   <bbva-web-component>  Ejemplo BBVA adaptado: logo + mensaje que cambia
                         de color según la paleta activa
@@ -73,7 +73,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
 
   [3] Generar una paleta
       · El usuario pulsa el botón "Generar nueva paleta".
-      · <palette-generator> genera 4 colores #RRGGBB aleatorios.
+      · <generador-paletas> genera 4 colores #RRGGBB aleatorios.
       · Emite el evento "paleta-cambio" (bubbles + composed) con los 4
         colores en detail; el evento SALE del Shadow DOM.
       · <app-dashboard> lo escucha, guarda los 4 valores en el historial
@@ -88,7 +88,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
         degradado nuevo en cada paleta generada.
 
   [4] Reloj
-      <user-clock> inicia un setInterval cada segundo, formatea la hora
+      <reloj-usuario> inicia un setInterval cada segundo, formatea la hora
       con Intl (24 h + zona horaria) y la pinta. Al desconectarse,
       disconnectedCallback limpia el intervalo (no deja basura).
 
@@ -117,7 +117,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
         destruido (fuga de memoria).
 
   [7] Historial
-      <app-dashboard> alimenta a <palette-history> con el array de
+      <app-dashboard> alimenta a <historial-paletas> con el array de
       paletas; este pinta la más reciente primero, la numera en orden
       inverso y muestra el contador en singular/plural (o el estado
       vacío si aún no hay paletas).
@@ -134,7 +134,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
 
   · customElements.define(etiqueta, Clase)
         Registra cada componente en el navegador. A partir de ahí,
-        usar <palette-generator> en el HTML crea una INSTANCIA de la
+        usar <generador-paletas> en el HTML crea una INSTANCIA de la
         clase, con su propio estado y ciclo de vida.
 
   · Ciclo de vida del elemento
@@ -150,7 +150,7 @@ Dependencias (todas desde CDN, sin build ni package.json):
         revés. Se accede a él con elemento.shadowRoot.
 
   · CustomEvent (eventos propios)
-        <palette-generator> emite "paleta-cambio" con detail, bubbles
+        <generador-paletas> emite "paleta-cambio" con detail, bubbles
         y composed: la COMBINACIÓN de bubbles + composed es lo que
         permite que el evento cruce el Shadow DOM y llegue hasta
         document. Es la vía de comunicación de HIJO → PADRE.
@@ -250,10 +250,10 @@ Dependencias (todas desde CDN, sin build ni package.json):
 ──────────────────────────────────────────────────────────────────────────────
 
   HIJO → PADRE   por EVENTOS con bubbles + composed
-                 (palette-generator → app-dashboard: "paleta-cambio")
+                 (generador-paletas → app-dashboard: "paleta-cambio")
 
   PADRE → HIJO   por PROPIEDADES reactivas
-                 (app-dashboard → palette-history: historial, paleta
+                 (app-dashboard → historial-paletas: historial, paleta
                   app-dashboard → bbva-web-component: paleta)
 
   HIJO → FUERA   por variables CSS heredadas

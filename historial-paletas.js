@@ -1,4 +1,4 @@
-// Archivo: palette-history.js — componente <palette-history> de Paletly.
+// Archivo: historial-paletas.js — componente <historial-paletas> de Paletly.
 //
 // Lit 3 desde CDN (misma URL en los 6 archivos = un solo módulo
 // compartido): LitElement (clase base), html (plantillas) y
@@ -6,7 +6,7 @@
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 
 // =========================================================
-// 2) <palette-history>
+// 2) <historial-paletas>
 //    Responsabilidad: mostrar el registro de todas las paletas
 //    generadas (4 valores por cada cambio). No guarda estado propio:
 //    recibe el historial desde <app-dashboard> mediante una propiedad
@@ -163,5 +163,5 @@ class HistorialPaletas extends LitElement {
   }
 }
 
-// REGISTRO del componente: existe la etiqueta <palette-history>.
-customElements.define("palette-history", HistorialPaletas);
+// REGISTRO del componente: existe la etiqueta <historial-paletas>.
+customElements.define("historial-paletas", HistorialPaletas);

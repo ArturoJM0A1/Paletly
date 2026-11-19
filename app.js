@@ -11,9 +11,9 @@
 // =========================================================
 //   app.js                 → este índice: solo explica y hace
 //                            los imports de los 6 componentes
-//   palette-generator.js   → <palette-generator>   generador aleatorio
-//   palette-history.js     → <palette-history>     historial de paletas
-//   user-clock.js          → <user-clock>          reloj + zona horaria
+//   generador-paletas.js   → <generador-paletas>   generador aleatorio
+//   historial-paletas.js     → <historial-paletas>     historial de paletas
+//   reloj-usuario.js          → <reloj-usuario>          reloj + zona horaria
 //   user-location-map.js   → <user-location-map>   mapa Leaflet + RxJS
 //   bbva-web-component.js  → <bbva-web-component>  logo BBVA con paleta
 //   app-dashboard.js       → <app-dashboard>       panel principal
@@ -37,9 +37,9 @@
 // Cada archivo importa Lit de la MISMA URL del CDN: el navegador
 // descarga el módulo UNA sola vez y los 6 comparten la misma clase
 // (por eso no hay conflictos al registrar las etiquetas).
-import "./palette-generator.js"; //genera colores
-import "./palette-history.js"; //historial de paletas
-import "./user-clock.js"; //hora
+import "./generador-paletas.js"; //genera colores
+import "./historial-paletas.js"; //historial de paletas
+import "./reloj-usuario.js"; //hora
 import "./user-location-map.js"; //mapa
 import "./bbva-web-component.js"; //logo BBVA
 import "./app-dashboard.js"; //Componente padre, cordinador
