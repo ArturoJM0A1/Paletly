@@ -86,3 +86,6 @@ npx serve -l 4173 .
 
 * **Aplicación:** `http://localhost:4173/index.html`
 * **Pruebas unitarias nativas (17 tests):** `http://localhost:4173/pruebas.html`
+
+
+### By: Arturo Juárez Monroy
