@@ -83,6 +83,8 @@ class BbvaWebComponent extends LitElement {
          rgb(37, 37, 38) es el color fijo del original (respaldo).
          ========================================================= */
       color: var(--paleta-1, rgb(37, 37, 38));
+        text-align: center; /* Esto es lo que lo centra en X */
+
     }
 
     h1 span {
@@ -92,7 +94,7 @@ class BbvaWebComponent extends LitElement {
          degradado de la paleta, que se inyecta con style en línea
          dentro de render() */
       background-color: blue;
-      font-size: 2rem;
+      font-size: 3.2rem;
       padding: 0.25em;
       /* Solo el color SÓLIDO se interpola con fundido; los degradados
          (background-image) no son transicionables en CSS: cambian de
@@ -101,11 +103,12 @@ class BbvaWebComponent extends LitElement {
     }
 
     /* Icono de cells en clippath: se pinta con el degradado de la paleta activa */
-    .cellsicon, .liticon, .jsicon {
+    .cellsicon, .liticon, .wecomponentsicon, .jsicon, .cssicon{
     width: 36px;
     height: 36px;
     display: inline-block;
     margin-left: 4px; 
+    margin-top: 9px;
     }
 
  .arturoicon {
@@ -123,8 +126,16 @@ class BbvaWebComponent extends LitElement {
  clip-path: polygon(49.67% 1%, 50% 40%, 69.33% 20.67%, 69.67% 59.33%, 89.33% 40%, 89.33% 79.67%, 69.67% 99.33%, 50.33% 79.67%, 30.67% 99%, 10.67% 79.67%, 10.67% 40%, 30.33% 59.33%, 30.33% 20.33%);
     }
 
+    .wecomponentsicon{
+    clip-path: polygon(26.5% 9.38%, 43.75% 9.38%, 46.75% 9.38%, 46.75% 9.38%, 73.5% 9.38%, 96.88% 49.88%, 73.5% 90.63%, 46.75% 90.63%, 38.25% 76%, 64.88% 75.75%, 79.63% 50.25%, 64.88% 24.25%, 38.25% 24.25%, 46.75% 9.38%, 43.75% 9.38%, 20.38% 49.75%, 43.75% 90.63%, 26.5% 90.63%, 3.13% 50.13%);
+    }
+
     .jsicon{
     clip-path: polygon(5.09% 3.08%, 94.66% 3.55%, 86.77% 89.1%, 76.59% 73.7%, 76.59% 73.7%, 79.39% 44.31%, 63.36% 46.45%, 63.1% 30.33%, 80.41% 30.09%, 81.42% 22.27%, 57.51% 20.85%, 53.18% 21.33%, 53.44% 56.64%, 69.47% 56.16%, 67.43% 67.06%, 53.44% 70.38%, 53.44% 79.86%, 76.59% 73.7%, 86.77% 89.1%, 48.6% 98.58%, 12.21% 88.63%, 19.08% 72.99%, 19.08% 72.99%, 46.31% 79.86%, 46.31% 21.56%, 36.9% 20.85%, 36.64% 67.77%, 19.08% 63.51%, 19.08% 72.99%, 12.21% 88.63%);
+    }
+
+    .cssicon{
+    clip-path: polygon(2.41% 4.91%, 97.59% 4.91%, 88.86% 88.63%, 48.8% 97.67%, 49.1% 79.84%, 49.1% 79.84%, 74.4% 74.16%, 79.82% 22.22%, 20.48% 22.22%, 21.39% 32.3%, 66.87% 32.3%, 65.66% 42.89%, 22.29% 42.89%, 23.49% 52.97%, 64.76% 52.97%, 63.25% 66.41%, 50.6% 69.51%, 24.1% 58.14%, 25.6% 74.16%, 49.1% 79.84%, 48.8% 97.67%, 10.84% 88.37%);
     }
 
     .arturoicon{
@@ -165,14 +176,17 @@ class BbvaWebComponent extends LitElement {
         -->
         <h1>
           <span style="background-color: ${c1}; background-image: ${degradado}">BBVA</span>
-          <div class="cellsicon" style="background-image: ${degradado};"></div>
-                    <div class="liticon" style="background-image: ${degradado};"></div>
-                                        <div class="jsicon" style="background-image: ${degradado};"></div>
+          <br>          
+<div class="cellsicon" style="background-image: ${degradado};"></div>
+<div class="liticon" style="background-image: ${degradado};"></div>
+<div class="wecomponentsicon" style="background-image: ${degradado};"></div>
+<div class="jsicon" style="background-image: ${degradado};"></div>
+<div class="cssicon" style="background-image: ${degradado};"></div>
 
 
+<div class="arturoicon" style="background-image: ${degradado};"></div>
 
         </h1>
-<div class="arturoicon" style="background-image: ${degradado};"></div>
 
 
 
