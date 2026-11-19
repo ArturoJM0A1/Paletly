@@ -29,7 +29,7 @@ class GeneradorPaleta extends LitElement {
     .tarjeta {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: 313px;
       padding: 24px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;
@@ -37,7 +37,8 @@ class GeneradorPaleta extends LitElement {
       box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      margin-bottom: 40px;
+      margin-bottom: 0px;
+      bottom: 0px;
     }
 
     /* Etiqueta pequeña en mayúsculas (cabecera de la tarjeta) */

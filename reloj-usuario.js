@@ -25,7 +25,7 @@ class RelojUsuario extends LitElement {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      height: 100%;
+      height: 220px;
       padding: 19px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;

@@ -56,6 +56,10 @@ class PanelPrincipal extends LitElement {
       box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+
+      justify-content: center;
+      align-items: center;
+      height: 220px;
     }
 
     /* Cabecera del panel: punto de estado + texto en mayúsculas */
@@ -63,7 +67,7 @@ class PanelPrincipal extends LitElement {
       display: flex;
       align-items: center;
       gap: 9px;
-      margin: 0 0 10px;
+      margin: 0 0 6px;
       color: #2b6cb0;
       font-size: 0.7rem;
       font-weight: 760;
@@ -262,13 +266,6 @@ class PanelPrincipal extends LitElement {
       <div class="rejilla">
         <!-- Fuente de la paleta: al generar avisa con "paleta-cambio" -->
         <generador-paletas></generador-paletas>
-
-        <!-- Historial: recibe el registro por propiedad (.historial) -->
-        <historial-paletas .historial=${this.historial}></historial-paletas>
-
-        <!-- Hijo independiente: detecta y muestra su propia hora local -->
-        <reloj-usuario></reloj-usuario>
-
         <!--
           Componente BBVA adaptado: recibe la paleta ACTIVA por
           Property Binding (.paleta=valor). Al pulsar «Generar nueva
@@ -279,6 +276,14 @@ class PanelPrincipal extends LitElement {
           llaves, porque Lit lo trataría como código y fallaría.)
         -->
         <bbva-componente .paleta=${this.paleta}></bbva-componente>
+
+        <!-- Historial: recibe el registro por propiedad (.historial) -->
+        <historial-paletas .historial=${this.historial}></historial-paletas>
+
+        <!-- Hijo independiente: detecta y muestra su propia hora local -->
+        <reloj-usuario></reloj-usuario>
+
+
 
         <!-- Estado compartido (ubicación + zona horaria + paleta activa) -->
         <section class="estado">

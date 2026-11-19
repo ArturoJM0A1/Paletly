@@ -55,7 +55,7 @@ class BbvaWebComponent extends LitElement {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      height: 100%;
+      height: 313px;
       padding: 24px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;
@@ -129,7 +129,7 @@ class BbvaWebComponent extends LitElement {
   // CONSTRUCTOR: se ejecuta al crear cada instancia de la etiqueta.
   constructor() {
     super(); // obligatorio: llama al constructor de LitElement (herencia)
-    this.message = "Web Components";
+    this.message = ":)";
     // Estado inicial: aún sin paleta; la pinta el dashboard al montarse.
     this.paleta = [];
   }
@@ -162,13 +162,14 @@ class BbvaWebComponent extends LitElement {
         <h1>
           <span style="background-color: ${c1}; background-image: ${degradado}">BBVA</span>
           <div class="cellsicon" style="background-image: ${degradado};"></div>
-          ${this.message} 
         </h1>
 
         <!-- Interpolación + join(): los colores recibidos en texto -->
         <p class="paleta-texto">
           Paleta recibida: ${this.paleta.length === 4 ? this.paleta.join(" · ") : "aún sin paleta"}
         </p>
+                  ${this.message} 
+
       </article>
     `;
   }

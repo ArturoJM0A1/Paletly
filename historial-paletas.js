@@ -25,7 +25,7 @@ class HistorialPaletas extends LitElement {
     .tarjeta {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: 313px;
       padding: 21px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;
