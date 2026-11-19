@@ -42,6 +42,33 @@ Los componentes hijos notifican cambios de estado al padre atravesando la fronte
 ### 3. Variables CSS hacia el documento global
 Dado que el encabezado y el logotipo de `index.html` viven **fuera** del Shadow DOM de `<app-panel-control>`, el panel publica los 4 colores actuales en `:root` (`--paleta-1` a `--paleta-4`) mediante `document.documentElement.style.setProperty()`. De este modo, el título y el logotipo exterior se recolorean automáticamente sin manipular el DOM directamente.
 
+# Panel de Control Modular (Open Cells)
+
+Aplicación web basada en **Web Components** construida con el *framework* **Open Cells** (de BBVA). Utiliza un sistema de enrutamiento por *hash* (`#!/`) con carga perezosa (*lazy loading*) y un almacén de estado compartido para comunicar los módulos de forma reactiva.
+
+---
+
+## Arquitectura y Rutas
+
+El enrutador (`routes.js`) gestiona tanto una vista unificada como el acceso aislado a cada micro-componente:
+
+| Ruta (`path`) | Componente | Descripción |
+| :--- | :--- | :--- |
+| `#! /` | `<app-panel-control>` | **Vista principal.** Carga el panel coordinador junto con todos los componentes hijos. |
+| `#!/generador-paletas` | `<generador-paletas>` | Herramienta aislada para crear paletas de colores. |
+| `#!/historial-paletas` | `<historial-paletas>` | Vista independiente con el registro de paletas guardadas. |
+| `#!/reloj-usuario` | `<reloj-usuario>` | Muestra la hora local del usuario de forma aislada. |
+| `#!/mapa-ubicacion-usuario` | `<mapa-ubicacion-usuario>` | Visualiza la geolocalización del usuario leyendo el estado compartido. |
+| `#!/bbva-componente` | `<bbva-componente>` | Módulo personalizado adicional. |
+
+---
+
+## Características Técnicas
+
+* **Carga Perezosa (*Lazy Loading*):** Cada ruta ejecuta un `import()` dinámico dentro de `action()`, descargando el código del componente únicamente cuando el usuario navega hacia él.
+* **Estado Compartido (`estado-compartido.js`):** Centraliza datos globales (como `solicitarUbicacion()`), evitando peticiones duplicadas y permitiendo que los componentes se suscriban a los cambios sin acoplarse entre sí.
+* **Navegación SPA:** Enrutamiento sin recarga de página gestionado mediante `this.navigate('nombre-ruta')`.
+
 ---
 
 ## Uso rápido
