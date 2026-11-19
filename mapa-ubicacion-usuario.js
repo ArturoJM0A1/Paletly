@@ -64,7 +64,8 @@ class UbicacionMapa extends LitElement {
       padding: 3px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;
-      background: rgba(255, 255, 255, 0.72);
+            background: rgba(255, 255, 255, 0.55);
+
       box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
             height: 313px;
             overflow: hidden;
@@ -109,13 +110,13 @@ class UbicacionMapa extends LitElement {
     /* Coordenadas + tipo de forma visible, bajo el mapa */
     .coordenadas {
       margin: 14px 0 0;
-      color: #40617f;
       font-size: 0.86rem;
       line-height: 1.6;
+      color: transparent; 
     }
 
     /* Los números en cifras tabulares: no "bailan" al cambiar */
-    .coordenadas strong { color: #0f2d4a; font-variant-numeric: tabular-nums; }
+    .coordenadas strong { color: transparent; font-variant-numeric: tabular-nums; }
   `;
 
   constructor() {
@@ -123,7 +124,7 @@ class UbicacionMapa extends LitElement {
     this.latitud = null;   // null = aún no hay permiso/coordenadas
     this.longitud = null;
     this.paleta = [];
-    this.aviso = "Solicitando permiso de ubicación…";
+    this.aviso = "Solicitando permiso";
     this.mensaje = ""; // mensajes propios del mapa (carga o error de Leaflet)
     this.forma = "círculo"; // estado inicial; lo alterna el Observable de RxJS
     // Campos NO reactivos: solo guardan referencias para no recrear nada.
@@ -236,7 +237,7 @@ class UbicacionMapa extends LitElement {
       const comprobar = () => {
         if (window.L?.map) return resolver(); // optional chaining
         if (intentos++ >= 40) return rechazar(new Error("la librería no cargó (revisa la conexión)"));
-        setTimeout(comprobar, 250); // reintento cada 250 ms (máx. 10 s)
+        setTimeout(comprobar, 100); // reintento cada 100 ms (máx. 4 s)
       };
       comprobar();
     });
@@ -252,7 +253,7 @@ class UbicacionMapa extends LitElement {
     // L.map: instancia de Leaflet sobre el contenedor del Shadow DOM.
     this.mapa = L.map(this.contenedorMapa, {
       center: posicion,
-      zoom: 15,           // nivel apropiado para ver ~500 m alrededor
+      zoom: 14.5,           // nivel apropiado para ver ~500 m alrededor
       scrollWheelZoom: false // el scroll de la página no roba el zoom
     });
 
@@ -280,8 +281,8 @@ class UbicacionMapa extends LitElement {
     this.circulo = L.circle(posicion, {
       radius: 500,
       weight: 2,
-      fillOpacity: 0.16,   // relleno ligero
-      opacity: 0.65        // borde ligero
+      fillOpacity: 0.6,   // relleno ligero
+      opacity: 0.8        // borde ligero
     }).addTo(this.mapa);
 
     // Cuadrado de 500 m de semilado: MISMO centro y MISMO estilo que el
@@ -289,8 +290,8 @@ class UbicacionMapa extends LitElement {
     // se muestra cuando el Observable de RxJS alterna la forma.
     this.cuadrado = L.rectangle(this.limites(posicion), {
       weight: 2,
-      fillOpacity: 0.16,
-      opacity: 0.65
+      fillOpacity: 0.6,
+      opacity: 0.8,
     });
 
     // =====================================================
@@ -391,10 +392,10 @@ class UbicacionMapa extends LitElement {
 
         <p class="coordenadas">
           ${hayCoordenadas
-            ? html`Latitud <strong>${this.latitud.toFixed(4)}</strong> ·
+        ? html`Latitud <strong>${this.latitud.toFixed(4)}</strong> ·
                    Longitud <strong>${this.longitud.toFixed(4)}</strong> ·
                    ${this.forma} de 500 m`
-            : "Debes aceptar el permiso"}
+        : "Debes aceptar el permiso"}
         </p>
       </article>
     `;
