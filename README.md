@@ -4,6 +4,11 @@ Aplicación web minimalista construida con **JavaScript**, **Web Components** y 
 
 La aplicación funciona como un panel de control reactivo que genera paletas de colores hexadecimales aleatorias y sincroniza el tema visual en tiempo real a través de todos sus componentes mediante un almacén de estado global.
 
+##  Ver demostración
+
+[▶️ Ver video](https://youtu.be/ZZ3SoZH-MiE?si=-Dr_1Sm1BKZ7QGCU)
+[🌐 Vercel](https://paletly-siete-componentes.vercel.app/)
+
 ## Características
 
 * **Generador de paletas**: Crea esquemas de 4 colores aleatorios.
