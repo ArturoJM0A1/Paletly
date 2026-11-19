@@ -1,6 +1,8 @@
 # Paletly
 
-Aplicación web minimalista construida con **Web Components** y **Lit**, con diseño Glassmorphism, sistema de enrutamiento **Open Cells** (de BBVA) y un almacén de estado compartido. No requiere compilación ni claves de API: todo es ESM puro con Lit 3 desde CDN.
+Aplicación web minimalista construida con **JavaScript**, **Web Components** y **Lit**, con diseño Glassmorphism, sistema de enrutamiento de **Open Cells**. 
+
+La aplicación funciona como un panel de control reactivo que genera paletas de colores hexadecimales aleatorias y sincroniza el tema visual en tiempo real a través de todos sus componentes mediante un almacén de estado global.
 
 ## Características
 
@@ -11,10 +13,9 @@ Aplicación web minimalista construida con **Web Components** y **Lit**, con dis
 * **Dashboard principal**: Coordina el Estado de la aplicación y lo publica al almacén compartido.
 * **Componente BBVA**: `<bbva-componente>` (adaptado del ejemplo de BBVA) que se recolorea con la paleta activa y se ve **idéntico** dentro del panel y en su ruta aislada.
 * **Menú vertical fijo**: Rail de iconos de Font Awesome a la izquierda, visible en todas las rutas, sin texto (solo iconos con tooltip y nombre accesible).
-
 ---
 
-## 🧩 Componentes del proyecto
+## Componentes del proyecto
 
 La aplicación se divide en **siete** componentes, cada uno encapsulado en su propio Shadow DOM y en su propio archivo:
 
@@ -28,7 +29,7 @@ La aplicación se divide en **siete** componentes, cada uno encapsulado en su pr
 
 ---
 
-## 🗂 Arquitectura y rutas
+## Arquitectura y rutas
 
 El enrutador (`routes.js`, framework **Open Cells**) gestiona tanto la vista unificada como el acceso aislado a cada componente, con carga perezosa (*lazy loading*) y enrutado por hash (`#!/`):
 
@@ -45,7 +46,7 @@ El menú `<app-menu>` vive **fuera** del contenedor de rutas (`#app-content`), p
 
 ---
 
-## 🔄 Arquitectura de comunicación
+## Arquitectura de comunicación
 
 El flujo de datos combina un **almacén único** con el patrón estándar de *Data Down, Events Up*, más un puente de estilos hacia el documento exterior:
 
@@ -69,7 +70,7 @@ El encabezado y el logotipo de `index.html` viven **fuera** de todo Shadow DOM, 
 
 ---
 
-## 🎨 Notas de implementación
+## Notas de implementación
 
 * **Menú de solo iconos**: `<app-menu>` inyecta Font Awesome 6.5.2 por **duplicado con la misma URL** (una sola petición, en caché): la hoja en el `<head>` de `index.html` registra las fuentes `@font-face` en `document.fonts` (las `@font-face` de un Shadow DOM no se registran y los glifos saldrían invisibles), mientras que la hoja inyectada dentro del Shadow DOM aporta las reglas de clase (`::before { content }`), que no atraviesan el Shadow DOM. Iconos actuales: `fa-gauge-high`, `fa-palette`, `fa-clock-rotate-left`, `fa-clock`, `fa-map-location-dot`, `fa-swatchbook` (fáciles de cambiar en el array `RUTAS` de `app-menu.js`).
 * **Vistas aisladas centradas como el panel**: `#app-content` tiene `min-width: 980px` (ancho mínimo de la rejilla del panel: 3 × 320 px + 2 × 10 px), de modo que el contenedor mide lo mismo en todas las rutas y cada vista aislada cae exactamente en la posición y el ancho de la columna central del panel (`width: max(320px, calc((100% - 20px) / 3))`). En pantallas menores de 760 px se libera ese mínimo para que la vista aislada se vea completa.
@@ -78,7 +79,7 @@ El encabezado y el logotipo de `index.html` viven **fuera** de todo Shadow DOM, 
 
 ---
 
-## 🚀 Ejecución y pruebas
+## Ejecución y pruebas
 
 Para evitar restricciones de CORS con módulos ESM, sirve la carpeta con un servidor local:
 
