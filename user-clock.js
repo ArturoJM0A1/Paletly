@@ -26,13 +26,14 @@ class RelojUsuario extends LitElement {
       flex-direction: column;
       justify-content: center;
       height: 100%;
-      padding: 24px;
+      padding: 19px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;
       background: rgba(255, 255, 255, 0.55);
       box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+      margin: 8px;
     }
 
     /* Etiqueta pequeña en mayúsculas (cabecera de la tarjeta) */

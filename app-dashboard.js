@@ -40,7 +40,7 @@ class PanelPrincipal extends LitElement {
     .rejilla {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 22px;
+      gap: 16px;
       width: min(100%, 1040px);
       margin: 0 auto;
     }
@@ -49,7 +49,7 @@ class PanelPrincipal extends LitElement {
 
     /* Panel de estado: tarjeta de cristal con el mensaje general */
     .estado {
-      padding: 22px 24px;
+      padding: 12px 14px;
       border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 24px;
       background: rgba(255, 255, 255, 0.55);

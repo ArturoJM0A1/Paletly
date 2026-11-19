@@ -37,9 +37,9 @@
 // Cada archivo importa Lit de la MISMA URL del CDN: el navegador
 // descarga el módulo UNA sola vez y los 6 comparten la misma clase
 // (por eso no hay conflictos al registrar las etiquetas).
-import "./palette-generator.js";
-import "./palette-history.js";
-import "./user-clock.js";
-import "./user-location-map.js";
-import "./bbva-web-component.js";
-import "./app-dashboard.js";
+import "./palette-generator.js"; //genera colores
+import "./palette-history.js"; //historial de paletas
+import "./user-clock.js"; //hora
+import "./user-location-map.js"; //mapa
+import "./bbva-web-component.js"; //logo BBVA
+import "./app-dashboard.js"; //Componente padre, cordinador

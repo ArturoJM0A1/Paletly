@@ -37,6 +37,7 @@ class GeneradorPaleta extends LitElement {
       box-shadow: 0 18px 40px rgba(59, 110, 166, 0.16), inset 0 1px 0 #ffffff;
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+      margin-bottom: 40px;
     }
 
     /* Etiqueta pequeña en mayúsculas (cabecera de la tarjeta) */
@@ -79,7 +80,8 @@ class GeneradorPaleta extends LitElement {
     /* Botón principal: margin-top:auto lo empuja al fondo de la tarjeta */
     button {
       margin-top: auto;
-      padding: 14px 18px;
+      margin-bottom: 20px;
+      padding: 12px 14px;
       border: 0;
       border-radius: 14px;
       background: linear-gradient(110deg, #60a5fa, #7dd3fc);
