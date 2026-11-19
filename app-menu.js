@@ -42,7 +42,16 @@ const RUTAS = [
 // Hoja de estilos de Font Awesome (iconos). OJO: este menú vive en
 // un Shadow DOM, y los estilos del documento NO entran aquí (igual
 // que con Leaflet en <mapa-ubicacion-usuario>), así que la hoja se
-// inyecta DENTRO del Shadow Root en firstUpdated().
+// inyecta DENTRO del Shadow Root en firstUpdated(): eso es lo que
+// hace que cada <i class="fa-solid fa-..."> pinte su glifo
+// (::before { content }).
+//
+// IMPORTANTE · DOS cargas con la misma URL (una sola petición):
+//   · index.html (head) → registra las FUENTES @font-face en
+//     document.fonts: sin esto, los glifos salen invisibles
+//     (las @font-face de un Shadow DOM no se registran).
+//   · este shadow link → aporta las reglas de CLASE dentro del
+//     shadow (las reglas del documento no atraviesan el Shadow DOM).
 const FA_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
 
 // Canal de contexto de la app (prefijo `__oc` = canal de Open Cells).

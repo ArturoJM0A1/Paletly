@@ -9,6 +9,32 @@
 
   <!--
     =========================================================
+    FONT AWESOME · ICONOS DEL MENÚ VERTICAL (app-menu)
+    =========================================================
+    Se carga AQUÍ, en el documento principal, y no solo dentro del
+    Shadow DOM del menú, por una peculiaridad importante:
+
+      · Las reglas de clase (.fa-gauge-high::before { content })
+        SÍ atraviesan el Shadow DOM cuando la hoja se inyecta en
+        el shadow root (lo hace app-menu en firstUpdated).
+      · Pero las reglas @font-face (la tipografía de los iconos)
+        declaradas dentro de un Shadow DOM NO se registran en
+        document.fonts → el glifo no tiene fuente y el icono
+        sale INVISIBLE (cuadrado vacío o nada).
+
+    Con esta hoja en <head>, el navegador registra las caras
+    "Font Awesome 6 Free" (400/900) para todo el documento,
+    incluido el interior de cualquier Shadow DOM. Ambas cargas
+    usan la MISMA URL → es una sola petición (en caché).
+    =========================================================
+  -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  />
+
+  <!--
+    =========================================================
     IMPORT MAP · OPEN CELLS (framework de rutas de BBVA)
     =========================================================
     Esta aplicación no usa build: todo es ESM puro. El import map
@@ -119,6 +145,29 @@
          (width: min(100%, 1090px)): así la regla de abajo puede
          calcular el ancho EXACTO de una columna del panel. */
       width: min(100%, 1090px);
+      /* =========================================================
+         ANCHO INDEPENDIENTE DE LA RUTA (clave para el centrado)
+         ---------------------------------------------------------
+         La rejilla del panel necesita 980px como mínimo
+         (3 columnas × 320px + 2 huecos × 10px). Sin este mínimo,
+         al ver una ruta aislada el contenedor se encoge (p. ej.
+         806px en una ventana de 912px) y esa vista se centra en
+         un hueco DISTINTO al de la columna central del panel:
+         el logo BBVA aislado aparecía desplazado ~87px respecto
+         a su sitio en el panel.
+
+         Con min-width el contenedor mide lo mismo en TODAS las
+         rutas, así que la vista aislada cae EXACTAMENTE en la
+         posición y el ancho de la columna central del panel.
+         ========================================================= */
+      min-width: 980px;
+    }
+
+    /* En pantallas estrechas (<760px) la columna central del panel
+       ni siquiera cabe entera: aquí se prioriza que la vista
+       aislada se vea completa y centrada en el hueco disponible. */
+    @media (max-width: 760px) {
+      #app-content { min-width: 0; }
     }
 
     /* =========================================================
