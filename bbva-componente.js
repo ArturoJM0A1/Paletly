@@ -142,7 +142,7 @@ class BbvaWebComponent extends LitElement {
   // CONSTRUCTOR: se ejecuta al crear cada instancia de la etiqueta.
   constructor() {
     super(); // obligatorio: llama al constructor de LitElement (herencia)
-    this.message = "Hola mundo";
+    this.message = "🇲🇽";
     // Estado inicial: aún sin paleta; la pinta el dashboard al montarse.
     this.paleta = [];
   }
