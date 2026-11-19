@@ -31,8 +31,8 @@ import { PageController } from '@open-cells/page-controller';
 // etiqueta → texto original: solo se usa como tooltip y nombre
 //          accesible del enlace.
 const RUTAS = [
-  { name: 'home', etiqueta: 'Panel', href: '#!/', icono: 'fa-solid fa-gauge-high' },
-  { name: 'generador-paletas', etiqueta: 'Generador', href: '#!/generador-paletas', icono: 'fa-solid fa-palette' },
+  { name: 'home', etiqueta: 'Panel', href: '#!/', icono: 'fa-solid fa-house' },
+  { name: 'generador-paletas', etiqueta: 'Generador', href: '#!/generador-paletas', icono: 'fa-solid fa-gauge-high' },
   { name: 'historial-paletas', etiqueta: 'Historial', href: '#!/historial-paletas', icono: 'fa-solid fa-clock-rotate-left' },
   { name: 'reloj-usuario', etiqueta: 'Reloj', href: '#!/reloj-usuario', icono: 'fa-solid fa-clock' },
   { name: 'mapa-ubicacion-usuario', etiqueta: 'Mapa', href: '#!/mapa-ubicacion-usuario', icono: 'fa-solid fa-map-location-dot' },
