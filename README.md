@@ -6,7 +6,7 @@ La aplicación funciona como un panel de control reactivo que genera paletas de 
 
 ##  Ver demostración
 
-[▶️ Ver video](https://youtu.be/ZZ3SoZH-MiE?si=-Dr_1Sm1BKZ7QGCU)
+[▶️ Ver video](https://youtu.be/_zVoCjdbiT4?si=HsTKBrKEz-rSH3wD)
 [🌐 Vercel](https://paletly-siete-componentes.vercel.app/)
 
 ## Características
